@@ -1,9 +1,12 @@
 #!/data/data/com.termux/files/usr/bin/bash
 # ─────────────────────────────────────────────────────────────────
+#  Created by: ivansslo (2026)
+#  License: MIT
+#  Repo: https://github.com/ivansslo/isdocker
+# ─────────────────────────────────────────────────────────────────
 #  isdocker · AdGuard Home
 #  Image : adguard/adguardhome
 #  Port  : 8123  (Web UI)
-# ─────────────────────────────────────────────────────────────────
 source "$(dirname "${BASH_SOURCE[0]}")/../../lib/source.env"
 
 cd "$(dirname "${BASH_SOURCE[0]}")"

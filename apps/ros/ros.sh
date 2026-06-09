@@ -1,8 +1,11 @@
 #!/data/data/com.termux/files/usr/bin/bash
 # ─────────────────────────────────────────────────────────────────
+#  Created by: ivansslo (2026)
+#  License: MIT
+#  Repo: https://github.com/ivansslo/isdocker
+# ─────────────────────────────────────────────────────────────────
 #  isdocker · ROS 2 Jazzy (Robot Operating System)
 #  Image : ghcr.io/sloretz/ros:jazzy-ros-base
-# ─────────────────────────────────────────────────────────────────
 source "$(dirname "${BASH_SOURCE[0]}")/../../lib/source.env"
 
 cd "$(dirname "${BASH_SOURCE[0]}")"

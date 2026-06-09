@@ -1,9 +1,12 @@
 #!/data/data/com.termux/files/usr/bin/bash
 # ─────────────────────────────────────────────────────────────────
+#  Created by: ivansslo (2026)
+#  License: MIT
+#  Repo: https://github.com/ivansslo/isdocker
+# ─────────────────────────────────────────────────────────────────
 #  isdocker · Alpine Linux (latest)
 #  Image : alpine:latest
 #  Port  : 2225 (SSH)
-# ─────────────────────────────────────────────────────────────────
 source "$(dirname "${BASH_SOURCE[0]}")/../../lib/source.env"
 
 cd "$(dirname "${BASH_SOURCE[0]}")"
@@ -28,6 +31,16 @@ if [ -n "$1" ]; then
   udocker_run --entrypoint "sh -c" -p "${PORT}:22" \
     -v "$DATA_DIR/root:/root" "$CONTAINER_NAME" "$cmd"
 else
+  echo -e "\n  ${CYAN}[1] Server (SSH Only)"
+  echo -e "  [2] Desktop (VNC + XFCE)${RESET}"
+  echo -en "\n  Select mode [1-2]: "
+  read -r mode
+
+  if [ "$mode" == "2" ]; then
+    bash "$(dirname "${BASH_SOURCE[0]}")/../../apps/vnc-desktop/alpine-vnc.sh"
+    exit $?
+  fi
+
   udocker_run --entrypoint "sh -c" -p "${PORT}:22" \
     -e _PORT="$PORT" \
     -v "$DATA_DIR/root:/root" \

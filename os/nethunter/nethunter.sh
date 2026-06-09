@@ -1,11 +1,14 @@
 #!/data/data/com.termux/files/usr/bin/bash
 # ─────────────────────────────────────────────────────────────────
+#  Created by: ivansslo (2026)
+#  License: MIT
+#  Repo: https://github.com/ivansslo/isdocker
+# ─────────────────────────────────────────────────────────────────
 #  isdocker · Kali NetHunter
 #  Image : kalilinux/kali-rolling (official Kali Linux)
 #  Port  : 2222 (SSH)  |  5900 (VNC/noVNC optional)
 #  Usage : bash ~/.isdocker/os/nethunter/nethunter.sh
 #          PORT=2223 bash ~/.isdocker/os/nethunter/nethunter.sh
-# ─────────────────────────────────────────────────────────────────
 source "$(dirname "${BASH_SOURCE[0]}")/../../lib/source.env"
 
 cd "$(dirname "${BASH_SOURCE[0]}")"
@@ -13,7 +16,6 @@ cd "$(dirname "${BASH_SOURCE[0]}")"
 IMAGE_NAME="kalilinux/kali-rolling"
 CONTAINER_NAME="kali-nethunter"
 
-# ── Port validation ──────────────────────────────────────────────
 case $PORT in
   ''|*[!0-9]*) PORT=2222 ;;
   *) [ "$PORT" -gt 1023 ] && [ "$PORT" -lt 65536 ] || PORT=2222 ;;
@@ -21,16 +23,13 @@ esac
 
 VNC_PORT="${VNC_PORT:-5900}"
 
-# ── Prepare directories ──────────────────────────────────────────
 DATA_DIR="$(pwd)/../../data-$CONTAINER_NAME"
 mkdir -p "$DATA_DIR"/{root,home,tools}
 
-# ── udocker setup ────────────────────────────────────────────────
 udocker_check
 udocker_prune
 udocker_create "$CONTAINER_NAME" "$IMAGE_NAME"
 
-# ── Launch ───────────────────────────────────────────────────────
 if [ -n "$1" ]; then
   cmd="$*"
   udocker_run \
@@ -44,6 +43,16 @@ if [ -n "$1" ]; then
     "$CONTAINER_NAME" \
     ". /.libnetstub/libnetstub.sh; $cmd"
 else
+  echo -e "\n  ${CYAN}[1] NetHunter Server (SSH Only)"
+  echo -e "  [2] NetHunter Desktop (VNC + XFCE)${RESET}"
+  echo -en "\n  Select mode [1-2]: "
+  read -r mode
+
+  if [ "$mode" == "2" ]; then
+    bash "$(dirname "${BASH_SOURCE[0]}")/../../apps/vnc-desktop/kali-vnc.sh"
+    exit $?
+  fi
+
   udocker_run \
     --entrypoint "bash -c" \
     -p "${PORT}:22" \

@@ -1,164 +1,71 @@
-# isdocker · Termux Container Manager
+# isdocker · Termux Container Manager (2026)
 
-Menjalankan Docker images di **Termux** tanpa root dan tanpa QEMU, menggunakan [udocker](https://github.com/indigo-dc/udocker).
+Menjalankan Docker images di **Termux** tanpa root, menggunakan [udocker](https://github.com/indigo-dc/udocker) dan emulasi QEMU untuk Windows.
 
-> Thanks to [@IntinteDAO](https://github.com/termux/termux-packages/pull/24699) — udocker tersedia resmi di Termux APT Repo.
-
----
-
-## 📁 Struktur Folder
-
-```
-isdocker/
-├── menu.sh                  ← Script menu interaktif (MULAI DI SINI)
-├── install_udocker.sh       ← Install / update udocker
-├── lib/
-│   ├── source.env           ← Shared helpers & env vars
-│   └── libnetstub.sh        ← Network stub untuk Termux
-├── os/
-│   ├── nethunter/
-│   │   └── nethunter.sh     ← Kali NetHunter (full pentest tools)
-│   ├── kali/
-│   │   └── kali.sh          ← Kali Linux minimal
-│   ├── ubuntu/
-│   │   └── ubuntu.sh        ← Ubuntu 22.04 LTS
-│   ├── debian/
-│   │   └── debian.sh        ← Debian 12 Bookworm
-│   └── alpine/
-│       └── alpine.sh        ← Alpine Linux
-├── apps/
-│   ├── adguard/             ← AdGuard Home          (port 8123)
-│   ├── home-assistant/      ← Home Assistant         (port 8123)
-│   ├── nextcloud/           ← Nextcloud              (port 2080)
-│   ├── owncloud/            ← ownCloud               (port 2081)
-│   ├── puter/               ← Puter cloud OS         (port 4100)
-│   ├── jellyfin/            ← Jellyfin Media Server  (port 8096)
-│   ├── calibre-web/         ← Calibre-Web eBooks     (port 8083)
-│   ├── s-pdf/               ← Stirling PDF           (port 8080)
-│   ├── httpd/               ← Apache HTTPD           (port 2082)
-│   ├── jupyter/             ← JupyterLab             (port 8888)
-│   ├── redis/               ← Redis                  (port 6379)
-│   └── ros/                 ← ROS 2 Jazzy
-└── dist/
-```
+> **Created by: ivansslo (2026)** · **License: MIT**
 
 ---
 
-## 🚀 Instalasi
+## 🚀 Fitur Unggulan
+- ✅ **Tanpa Root:** Aman dan berjalan di level user Termux.
+- ✅ **Container Manager Pro:** Pantau status aktif, IP, port, dan user dari setiap container.
+- ✅ **Multi-OS:** Ubuntu, Debian, Alpine, Kali, Windows 11, dan Windows 7.
+- ✅ **VNC & RDP:** Akses Desktop Environment (XFCE) atau Windows dengan mudah.
+- ✅ **Auto Update:** Selalu dapatkan fitur terbaru dengan script update internal.
 
-Di Termux:
+---
+
+## 💻 Cara Instalasi & Penggunaan
+
+### 1. Instalasi Cepat
 ```bash
 pkg install git -y
 git clone --depth 1 https://github.com/ivansslo/isdocker ~/.isdocker
-bash ~/.isdocker/install_udocker.sh
+bash ~/.isdocker/menu.sh
 ```
 
----
-
-## 🎛️ Gunakan Menu Interaktif
-
+### 2. Menu Interaktif
+Jalankan menu untuk mengelola semua container:
 ```bash
 bash ~/.isdocker/menu.sh
 ```
 
-Menu akan menampilkan semua pilihan OS dan Aplikasi. Tekan nomor pilihan, lalu konfirmasi port (atau Enter untuk default).
+---
+
+## 📊 Detail Sistem & Koneksi
+
+| Opsi | Nama OS / App | Default User | Default Port | Mode |
+|---|---|---|---|---|
+| **01** | **Ubuntu 22.04** | `root` | `2223` | SSH / VNC |
+| **02** | **Debian 12** | `root` | `2224` | SSH / VNC |
+| **04** | **Windows 11** | `user` | `8006` | Web / VNC |
+| **05** | **Windows 7** | `user` | `8007` | Web / VNC |
+| **06** | **Kali NetHunter**| `root` | `2222` | SSH / VNC |
+| **20** | **Tailscale** | — | — | Tunnel |
+
+### 🔑 Akses Default:
+- **SSH Password:** `ubuntu`, `debian`, `alpine`, `kali`, atau `nethunter`.
+- **VNC Password:** `vncpass`.
+- **Windows User:** Tanpa password (otomatis login).
 
 ---
 
-## 🔒 OS / Distribusi Linux
+## 🌐 Networking & Tunnel (Remote Access)
+Repositori ini sekarang mendukung **Tailscale Tunnel**. Anda bisa mengakses VNC, RDP, dan SSH container Anda dari mana saja di dunia melalui IP Tailscale Anda.
 
-### Kali NetHunter (SSH)
-```bash
-bash ~/.isdocker/os/nethunter/nethunter.sh
-```
-- **SSH:** `ssh root@localhost -p 2222` · Password: `nethunter`
-- Tools: nmap, metasploit, aircrack-ng, hydra, john, sqlmap, nikto, wifite, hashcat, dll.
-- VNC port: `5900`
-
-### Kali Linux (minimal)
-```bash
-bash ~/.isdocker/os/kali/kali.sh
-```
-SSH → port `2222`, password: `kali`
-
-### Ubuntu 22.04 LTS
-```bash
-bash ~/.isdocker/os/ubuntu/ubuntu.sh
-```
-SSH → port `2223`, password: `ubuntu`
-
-### Debian 12 Bookworm
-```bash
-bash ~/.isdocker/os/debian/debian.sh
-```
-SSH → port `2224`, password: `debian`
-
-### Alpine Linux
-```bash
-bash ~/.isdocker/os/alpine/alpine.sh
-```
-SSH → port `2225`, password: `alpine`
+1. Hubungkan Tailscale melalui Opsi **20** di menu.
+2. Gunakan IP yang diberikan oleh Tailscale untuk terhubung ke VNC/SSH (contoh: `ssh root@100.x.y.z -p 2223`).
 
 ---
 
-## 📦 Aplikasi
-
-| Aplikasi | Script | Default Port | URL |
-|---|---|---|---|
-| AdGuard Home | `apps/adguard/adguard.sh` | 8123 | http://localhost:8123 |
-| Home Assistant | `apps/home-assistant/home-assistant.sh` | 8123 | http://localhost:8123 |
-| Nextcloud | `apps/nextcloud/nextcloud.sh` | 2080 | http://localhost:2080 |
-| ownCloud | `apps/owncloud/owncloud.sh` | 2081 | http://localhost:2081 |
-| Puter | `apps/puter/puter.sh` | 4100 | http://puter.localhost:4100 |
-| Jellyfin | `apps/jellyfin/jellyfin.sh` | 8096 | http://localhost:8096 |
-| Calibre-Web | `apps/calibre-web/calibre-web.sh` | 8083 | http://localhost:8083 |
-| Stirling PDF | `apps/s-pdf/s-pdf.sh` | 8080 | http://localhost:8080 |
-| Apache HTTPD | `apps/httpd/httpd.sh` | 2082 | http://localhost:2082 |
-| JupyterLab | `apps/jupyter/jupyter.sh` | 8888 | http://localhost:8888 |
-| Redis | `apps/redis/redis.sh` | 6379 | — |
-| ROS 2 Jazzy | `apps/ros/ros.sh` | — | — |
-
-> **Calibre-Web default login:** `admin` / `admin123`
+## 🔧 Manajemen Container & ID
+Gunakan fitur **Container Manager (Opsi 21)** untuk:
+- Melihat **Container ID** yang terinstall.
+- Mengecek status Running/Inactive.
+- Mendapatkan link akses cepat berdasarkan IP Tailscale atau Localhost.
 
 ---
 
-## ⚙️ Kustomisasi
-
-### Ganti Port
-```bash
-PORT=9090 bash ~/.isdocker/apps/s-pdf/s-pdf.sh
-PORT=3333 bash ~/.isdocker/os/nethunter/nethunter.sh
-```
-
-### Jalankan Perintah Kustom
-```bash
-bash ~/.isdocker/apps/s-pdf/s-pdf.sh 'echo hello; ls /'
-```
-
----
-
-## 🛠️ Tips Udocker
-
-```bash
-# List container
-udocker ps
-
-# Hapus container
-udocker rm "container_name"
-
-# List images
-udocker images
-
-# Hapus image
-udocker rmi "image_name"
-
-# Update repo
-cd ~/.isdocker && git pull
-```
-
----
-
-## 🔗 Link
-
-- [Termux F-Droid](https://f-droid.org/en/packages/com.termux/)
-- [udocker GitHub](https://github.com/indigo-dc/udocker)
+## 📜 Lisensi & Tahun Pembuatan
+Seluruh script di repositori ini diperbarui untuk tahun **2026**.
+Dilisensikan di bawah **MIT License**. Dibuat oleh **ivansslo**.
