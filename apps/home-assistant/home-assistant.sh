@@ -1,9 +1,12 @@
 #!/data/data/com.termux/files/usr/bin/bash
 # ─────────────────────────────────────────────────────────────────
+#  Created by: ivansslo (2026)
+#  License: MIT
+#  Repo: https://github.com/ivansslo/isdocker
+# ─────────────────────────────────────────────────────────────────
 #  isdocker · Home Assistant
 #  Image : homeassistant/home-assistant:latest
 #  Port  : 8123
-# ─────────────────────────────────────────────────────────────────
 source "$(dirname "${BASH_SOURCE[0]}")/../../lib/source.env"
 
 cd "$(dirname "${BASH_SOURCE[0]}")"

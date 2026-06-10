@@ -4,10 +4,16 @@
 #  License: MIT
 #  Repo: https://github.com/ivansslo/isdocker
 # ─────────────────────────────────────────────────────────────────
-#  isdocker · Install / update udocker
-source "$(dirname "${BASH_SOURCE[0]}")/lib/source.env"
 
-install_udocker
-fix_udocker
+source "$(dirname "${BASH_SOURCE[0]}")/source.env"
 
-exit $?
+echo -e "\n${YELLOW}[*] Checking for updates...${RESET}"
+cd "$(dirname "${BASH_SOURCE[0]}")/.." || exit
+
+if git pull; then
+    echo -e "${GREEN}[✓] Repository updated successfully!${RESET}"
+else
+    echo -e "${RED}[!] Update failed. Check your internet connection.${RESET}"
+fi
+
+sleep 2

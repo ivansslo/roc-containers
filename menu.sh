@@ -1,8 +1,9 @@
 #!/data/data/com.termux/files/usr/bin/bash
-# ═══════════════════════════════════════════════════════════════════
-#  isdocker · Interactive Install Menu
+# ─────────────────────────────────────────────────────────────────
+#  Created by: ivansslo (2026)
+#  License: MIT
 #  Repo: https://github.com/ivansslo/isdocker
-# ═══════════════════════════════════════════════════════════════════
+# ─────────────────────────────────────────────────────────────────
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
@@ -23,9 +24,14 @@ print_header(){
   echo -e "${CYAN}${BOLD}"
   echo "  ╔══════════════════════════════════════════════════════╗"
   echo "  ║           isdocker · Termux Container Manager       ║"
-  echo "  ║         github.com/ivansslo/isdocker                ║"
+  echo "  ║               (c) 2026 | @ivansslo                  ║"
   echo "  ╚══════════════════════════════════════════════════════╝"
   echo -e "${RESET}"
+  
+  # Quick Status Info
+  local containers_count=$(udocker ps | tail -n +2 | wc -l | awk '{print $1}')
+  local ts_ip=$(tailscale ip -4 2>/dev/null || echo "offline")
+  echo -e "  ${DIM}OS: $(uname -m) | Containers: $containers_count | Tailscale: $ts_ip${RESET}"
 }
 
 print_section(){
@@ -37,6 +43,8 @@ print_item(){
   local color="${CYAN}"
   [ "$cat" = "os" ]  && color="${GREEN}"
   [ "$cat" = "sec" ] && color="${RED}"
+  [ "$cat" = "sys" ] && color="${MAGENTA}"
+  [ "$cat" = "net" ] && color="${BLUE}"
   printf "  ${color}${BOLD}[%2s]${RESET}  %-28s" "$num" "$label"
   [ -n "$port" ] && echo -e "${DIM}→ port $port${RESET}" || echo ""
 }
@@ -71,7 +79,6 @@ launch_with_port(){
   PORT="$port" run_script "$script"
 }
 
-# ── Install udocker ──────────────────────────────────────────────────
 ensure_udocker(){
   if ! udocker -V &>/dev/null 2>&1; then
     echo -e "\n${YELLOW}  [*] udocker not found — installing...${RESET}"
@@ -85,164 +92,90 @@ ensure_udocker(){
 while true; do
   print_header
 
-  print_section "🛡️  Security / Penetration Testing OS"
-  print_item  1  "Kali NetHunter (full tools)"   2222  "sec"
-  print_item  2  "Kali Linux (minimal shell)"     2222  "sec"
+  print_section "🐧  Operating Systems"
+  print_item  01  "Ubuntu 22.04 LTS"               2223  "os"
+  print_item  02  "Debian 12 Bookworm"             2224  "os"
+  print_item  03  "Alpine Linux (latest)"           2225  "os"
+  print_item  04  "Windows 11 Lite (Tiny11)"       8006  "os"
+  print_item  05  "Windows 7 Lite (Fast)"          8007  "os"
 
-  print_section "🐧  Linux OS"
-  print_item  3  "Ubuntu 22.04 LTS"               2223  "os"
-  print_item  4  "Debian 12 Bookworm (slim)"       2224  "os"
-  print_item  5  "Alpine Linux (latest)"           2225  "os"
+  print_section "🛡️  Security & Pentest"
+  print_item  06  "Kali NetHunter (Full)"          2222  "sec"
+  print_item  07  "Kali Linux (Minimal)"           2222  "sec"
 
-  print_section "☁️  Self-Hosted Apps"
-  print_item  6  "AdGuard Home"                   8123  "app"
-  print_item  7  "Home Assistant"                 8123  "app"
-  print_item  8  "Nextcloud"                      2080  "app"
-  print_item  9  "ownCloud"                       2081  "app"
-  print_item 10  "Puter (cloud OS)"               4100  "app"
+  print_section "☁️  Apps & Media"
+  print_item  08  "AdGuard Home"                   8123  "app"
+  print_item  09  "Home Assistant"                 8123  "app"
+  print_item  10  "Nextcloud"                      2080  "app"
+  print_item  11  "ownCloud"                       2081  "app"
+  print_item  12  "Puter (Cloud OS)"               4100  "app"
+  print_item  13  "Jellyfin Media Server"          8096  "app"
+  print_item  14  "Stirling PDF"                   8080  "app"
+  print_item  15  "JupyterLab / Dev"               8888  "app"
 
-  print_section "🎬  Media & Tools"
-  print_item 11  "Jellyfin Media Server"          8096  "app"
-  print_item 12  "Calibre-Web (eBooks)"           8083  "app"
-  print_item 13  "Stirling PDF"                   8080  "app"
-  print_item 14  "Apache HTTPD"                   2082  "app"
-  print_item 15  "JupyterLab / Notebook"          8888  "app"
+  print_section "🖥️  VNC Desktop Shortcuts"
+  print_item  16  "Ubuntu Desktop"                 5901  "vnc"
+  print_item  17  "Debian Desktop"                 5902  "vnc"
+  print_item  18  "Alpine Desktop"                 5903  "vnc"
+  print_item  19  "Kali Desktop"                   5904  "vnc"
 
-  print_section "⚙️  Dev / Infra"
-  print_item 16  "Redis"                          6379  "app"
-  print_item 17  "ROS 2 Jazzy"                    ""    "app"
+  print_section "🌐  Network & Remote"
+  print_item  20  "Tailscale CLI (Host)"           ""    "net"
+  print_item  21  "Tailscale in Container"         ""    "net"
 
-  print_section "🖥️  VNC Desktop"
-  print_item 19  "Ubuntu Desktop (VNC)"          5901  "app"
-  print_item 20  "Debian Desktop (VNC)"          5902  "app"
-  print_item 21  "Alpine Desktop (VNC)"          5903  "app"
-  print_item 22  "Kali Desktop (VNC)"            5904  "app"
-
-  print_section "🔧  System"
-  print_item 18  "Install / Reinstall udocker"    ""    "sys"
-  print_item  0  "Exit"                           ""    "sys"
+  print_section "🔧  System Utilities"
+  print_item  22  "Container Manager (ID/Status)"  ""    "sys"
+  print_item  23  "System Info (RAM/CPU)"          ""    "sys"
+  print_item  24  "Uninstall / Clean"              ""    "sys"
+  print_item  25  "Update isdocker"                ""    "sys"
+  print_item  26  "Reinstall udocker"              ""    "sys"
+  print_item  00  "Exit"                           ""    "sys"
 
   echo ""
-  echo -en "  ${BOLD}Select option [0-22]: ${RESET}"
+  echo -en "  ${BOLD}Select option [00-26]: ${RESET}"
   read -r choice
 
   case "$choice" in
-
-    # ── Security OS ────────────────────────────────────────────────
-    1)
+    1|01) ensure_udocker; launch_with_port "$SCRIPT_DIR/os/ubuntu/ubuntu.sh" 2223 ;;
+    2|02) ensure_udocker; launch_with_port "$SCRIPT_DIR/os/debian/debian.sh" 2224 ;;
+    3|03) ensure_udocker; launch_with_port "$SCRIPT_DIR/os/alpine/alpine.sh" 2225 ;;
+    4|04) ensure_udocker; launch_with_port "$SCRIPT_DIR/os/windows11/windows11.sh" 8006 ;;
+    5|05) ensure_udocker; launch_with_port "$SCRIPT_DIR/os/windows7/windows7.sh" 8007 ;;
+    
+    6|06)
       ensure_udocker
-      echo -e "\n  ${RED}${BOLD}[!] NetHunter will install kali-linux-headless (large download)${RESET}"
-      echo -en "  Continue? [y/N]: "
-      read -r confirm
+      echo -e "\n  ${RED}${BOLD}[!] Large download (kali-linux-headless)${RESET}"
+      echo -en "  Continue? [y/N]: " ; read -r confirm
       [[ "${confirm,,}" == "y" ]] && launch_with_port "$SCRIPT_DIR/os/nethunter/nethunter.sh" 2222
       ;;
-    2)
-      ensure_udocker
-      launch_with_port "$SCRIPT_DIR/os/kali/kali.sh" 2222
-      ;;
+    7|07) ensure_udocker; launch_with_port "$SCRIPT_DIR/os/kali/kali.sh" 2222 ;;
 
-    # ── Linux OS ───────────────────────────────────────────────────
-    3)
-      ensure_udocker
-      launch_with_port "$SCRIPT_DIR/os/ubuntu/ubuntu.sh" 2223
-      ;;
-    4)
-      ensure_udocker
-      launch_with_port "$SCRIPT_DIR/os/debian/debian.sh" 2224
-      ;;
-    5)
-      ensure_udocker
-      launch_with_port "$SCRIPT_DIR/os/alpine/alpine.sh" 2225
-      ;;
+    8|08) ensure_udocker; launch_with_port "$SCRIPT_DIR/apps/adguard/adguard.sh" 8123 ;;
+    9|09) ensure_udocker; launch_with_port "$SCRIPT_DIR/apps/home-assistant/home-assistant.sh" 8123 ;;
+    10) ensure_udocker; launch_with_port "$SCRIPT_DIR/apps/nextcloud/nextcloud.sh" 2080 ;;
+    11) ensure_udocker; launch_with_port "$SCRIPT_DIR/apps/owncloud/owncloud.sh" 2081 ;;
+    12) ensure_udocker; launch_with_port "$SCRIPT_DIR/apps/puter/puter.sh" 4100 ;;
+    13) ensure_udocker; launch_with_port "$SCRIPT_DIR/apps/jellyfin/jellyfin.sh" 8096 ;;
+    14) ensure_udocker; launch_with_port "$SCRIPT_DIR/apps/s-pdf/s-pdf.sh" 8080 ;;
+    15) ensure_udocker; launch_with_port "$SCRIPT_DIR/apps/jupyter/jupyter.sh" 8888 ;;
 
-    # ── Apps ───────────────────────────────────────────────────────
-    6)
-      ensure_udocker
-      launch_with_port "$SCRIPT_DIR/apps/adguard/adguard.sh" 8123
-      ;;
-    7)
-      ensure_udocker
-      launch_with_port "$SCRIPT_DIR/apps/home-assistant/home-assistant.sh" 8123
-      ;;
-    8)
-      ensure_udocker
-      launch_with_port "$SCRIPT_DIR/apps/nextcloud/nextcloud.sh" 2080
-      ;;
-    9)
-      ensure_udocker
-      launch_with_port "$SCRIPT_DIR/apps/owncloud/owncloud.sh" 2081
-      ;;
-    10)
-      ensure_udocker
-      launch_with_port "$SCRIPT_DIR/apps/puter/puter.sh" 4100
-      ;;
-    11)
-      ensure_udocker
-      launch_with_port "$SCRIPT_DIR/apps/jellyfin/jellyfin.sh" 8096
-      ;;
-    12)
-      ensure_udocker
-      launch_with_port "$SCRIPT_DIR/apps/calibre-web/calibre-web.sh" 8083
-      ;;
-    13)
-      ensure_udocker
-      launch_with_port "$SCRIPT_DIR/apps/s-pdf/s-pdf.sh" 8080
-      ;;
-    14)
-      ensure_udocker
-      launch_with_port "$SCRIPT_DIR/apps/httpd/httpd.sh" 2082
-      ;;
-    15)
-      ensure_udocker
-      launch_with_port "$SCRIPT_DIR/apps/jupyter/jupyter.sh" 8888
-      ;;
-    16)
-      ensure_udocker
-      launch_with_port "$SCRIPT_DIR/apps/redis/redis.sh" 6379
-      ;;
-    17)
-      ensure_udocker
-      echo -e "\n  ${GREEN}[*] Starting ROS 2 Jazzy...${RESET}\n"
-      run_script "$SCRIPT_DIR/apps/ros/ros.sh"
-      ;;
+    16) ensure_udocker; launch_with_port "$SCRIPT_DIR/apps/vnc-desktop/ubuntu-vnc.sh" 5901 ;;
+    17) ensure_udocker; launch_with_port "$SCRIPT_DIR/apps/vnc-desktop/debian-vnc.sh" 5902 ;;
+    18) ensure_udocker; launch_with_port "$SCRIPT_DIR/apps/vnc-desktop/alpine-vnc.sh" 5903 ;;
+    19) ensure_udocker; launch_with_port "$SCRIPT_DIR/apps/vnc-desktop/kali-vnc.sh" 5904 ;;
 
-    # ── VNC Desktop ───────────────────────────────────────────────
-    19)
-      ensure_udocker
-      launch_with_port "$SCRIPT_DIR/apps/vnc-desktop/ubuntu-vnc.sh" 5901
-      ;;
-    20)
-      ensure_udocker
-      launch_with_port "$SCRIPT_DIR/apps/vnc-desktop/debian-vnc.sh" 5902
-      ;;
-    21)
-      ensure_udocker
-      launch_with_port "$SCRIPT_DIR/apps/vnc-desktop/alpine-vnc.sh" 5903
-      ;;
-    22)
-      ensure_udocker
-      launch_with_port "$SCRIPT_DIR/apps/vnc-desktop/kali-vnc.sh" 5904
-      ;;
+    20) run_script "$SCRIPT_DIR/lib/tailscale.sh" ;;
+    21) ensure_udocker; run_script "$SCRIPT_DIR/lib/tailscale_container.sh" ;;
+    22) ensure_udocker; run_script "$SCRIPT_DIR/lib/manager.sh" ;;
+    23) run_script "$SCRIPT_DIR/lib/sysinfo.sh" ;;
+    24) run_script "$SCRIPT_DIR/lib/uninstall.sh" ;;
+    25) run_script "$SCRIPT_DIR/lib/update.sh" ;;
+    26) run_script "$SCRIPT_DIR/install_udocker.sh" ;;
 
-    # ── System ─────────────────────────────────────────────────────
-    18)
-      echo -e "\n  ${YELLOW}[*] Installing udocker...${RESET}\n"
-      run_script "$SCRIPT_DIR/install_udocker.sh"
-      echo -e "\n  ${GREEN}[✓] Done!${RESET}"
-      sleep 2
-      ;;
-
-    0|q|Q|exit)
-      echo -e "\n  ${DIM}Goodbye.${RESET}\n"
-      exit 0
-      ;;
-
-    *)
-      echo -e "\n  ${RED}  Invalid option. Press Enter to continue...${RESET}"
-      read -r
-      ;;
+    0|00|q|Q|exit) echo -e "\n  Goodbye.\n" ; exit 0 ;;
+    *) echo -e "\n  Invalid option." ; sleep 1 ;;
   esac
 
-  echo -e "\n  ${DIM}Press Enter to return to menu...${RESET}"
+  echo -e "\n  ${DIM}Press Enter to return...${RESET}"
   read -r
 done

@@ -4,10 +4,4 @@
 #  License: MIT
 #  Repo: https://github.com/ivansslo/isdocker
 # ─────────────────────────────────────────────────────────────────
-#  isdocker · Install / update udocker
-source "$(dirname "${BASH_SOURCE[0]}")/lib/source.env"
-
-install_udocker
-fix_udocker
-
-exit $?
+bash "$(dirname "${BASH_SOURCE[0]}")/menu.sh"

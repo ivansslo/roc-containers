@@ -1,9 +1,12 @@
 #!/data/data/com.termux/files/usr/bin/bash
 # ─────────────────────────────────────────────────────────────────
+#  Created by: ivansslo (2026)
+#  License: MIT
+#  Repo: https://github.com/ivansslo/isdocker
+# ─────────────────────────────────────────────────────────────────
 #  isdocker · Debian 12 (Bookworm)
 #  Image : debian:bookworm-slim
 #  Port  : 2224 (SSH)
-# ─────────────────────────────────────────────────────────────────
 source "$(dirname "${BASH_SOURCE[0]}")/../../lib/source.env"
 
 cd "$(dirname "${BASH_SOURCE[0]}")"
@@ -28,6 +31,16 @@ if [ -n "$1" ]; then
   udocker_run --entrypoint "bash -c" -p "${PORT}:22" -e TZ="$(get_tz)" \
     -v "$DATA_DIR/root:/root" "$CONTAINER_NAME" "$cmd"
 else
+  echo -e "\n  ${CYAN}[1] Server (SSH Only)"
+  echo -e "  [2] Desktop (VNC + XFCE)${RESET}"
+  echo -en "\n  Select mode [1-2]: "
+  read -r mode
+
+  if [ "$mode" == "2" ]; then
+    bash "$(dirname "${BASH_SOURCE[0]}")/../../apps/vnc-desktop/debian-vnc.sh"
+    exit $?
+  fi
+
   udocker_run --entrypoint "bash -c" -p "${PORT}:22" \
     -e _PORT="$PORT" -e TZ="$(get_tz)" \
     -v "$DATA_DIR/root:/root" \
