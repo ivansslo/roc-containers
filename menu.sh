@@ -119,6 +119,10 @@ while true; do
   print_item  18  "Alpine Desktop"                 5903  "vnc"
   print_item  19  "Kali Desktop"                   5904  "vnc"
 
+  print_section "🚀  AI IDE / Dev Desktop"
+  print_item  26  "Antigravity (Google AI IDE)"    5905  "app"
+  print_item  27  "Provider GCP (Gemini/Vertex)"   ""    "net"
+
   print_section "🌐  Network & Remote"
   print_item  20  "Tailscale CLI (Token/Login)"    ""    "net"
 
@@ -131,7 +135,7 @@ while true; do
   print_item  00  "Exit"                           ""    "sys"
 
   echo ""
-  echo -en "  ${BOLD}Select option [00-25]: ${RESET}"
+  echo -en "  ${BOLD}Select option [00-27]: ${RESET}"
   read -r choice
 
   case "$choice" in
@@ -162,6 +166,9 @@ while true; do
     17) ensure_udocker; launch_with_port "$SCRIPT_DIR/apps/vnc-desktop/debian-vnc.sh" 5902 ;;
     18) ensure_udocker; launch_with_port "$SCRIPT_DIR/apps/vnc-desktop/alpine-vnc.sh" 5903 ;;
     19) ensure_udocker; launch_with_port "$SCRIPT_DIR/apps/vnc-desktop/kali-vnc.sh" 5904 ;;
+
+    26) ensure_udocker; launch_with_port "$SCRIPT_DIR/apps/antigravity/antigravity.sh" 5905 ;;
+    27) run_script "$SCRIPT_DIR/lib/gcp_provider.sh" ;;
 
     20) run_script "$SCRIPT_DIR/lib/tailscale.sh" ;;
     21) ensure_udocker; run_script "$SCRIPT_DIR/lib/manager.sh" ;;
