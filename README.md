@@ -41,7 +41,23 @@ bash ~/.isdocker/menu.sh
 | **04** | **Windows 11** | `user` | `8006` | Web / VNC |
 | **05** | **Windows 7** | `user` | `8007` | Web / VNC |
 | **06** | **Kali NetHunter**| `root` | `2222` | SSH / VNC |
+| **26** | **Antigravity (Google AI IDE)** | `root` | `5905` | Web |
+| **27** | **Provider GCP (Gemini/Vertex)** | — | — | Config |
 | **20** | **Tailscale** | — | — | Tunnel |
+
+> **Antigravity** adalah IDE berbasis AI dari Google (Electron/VSCode).
+> Opsi **26** menjalankannya **headless** di container `python:3.12-slim`
+> (satu keluarga dengan crewai/hermes) memakai `antigravity serve-web`,
+> lalu UI editor dibuka lewat **browser** di `http://localhost:5905`
+> — tanpa VNC. Build: `linux-arm` (aarch64) v2.2.1.
+>
+> Subcommand hermes-style: `setup`, `run` (default), `version`, `shell`.
+> Jika muncul URL login OAuth di terminal, buka di browser HP Anda.
+>
+> **Provider GCP (opsi 27)** menyimpan kredensial Google Cloud / Gemini
+> (`GEMINI_API_KEY`, `GCP_PROJECT`, `GCP_LOCATION`, Vertex AI, atau
+> service-account JSON) ke `~/.hermes_keys` — dipakai bersama oleh
+> Antigravity dan crewai/hermes.
 
 ### 🔑 Akses Default:
 - **SSH Password:** `ubuntu`, `debian`, `alpine`, `kali`, atau `nethunter`.
