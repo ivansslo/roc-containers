@@ -122,7 +122,7 @@ printf "  ${GREEN}✅${RESET} %-20s %s\n" "roc-agent" "AI Agent CLI (Termux nati
 # ── OS Containers ──
 make_cmd "roc-ubuntu"      "os/ubuntu/ubuntu.sh"        "Ubuntu 22.04 (port 2223)"
 make_cmd "roc-debian"      "os/debian/debian.sh"        "Debian 12 (port 2224)"
-make_cmd "roc-kali"        "os/kali/kali.sh"            "Kali Minimal (port 2222)"
+make_cmd "roc-hermui"      "apps/hermui/hermui.sh"      "Hermes UI (ivansslo/hermes-ui)"
 make_cmd "roc-nethunter"   "os/nethunter/nethunter.sh"  "Kali NetHunter (port 2222)"
 
 # ── AI & Dev Apps ──

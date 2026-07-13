@@ -38,7 +38,7 @@ Setelah install, semua command langsung tersedia:
 |---|---|
 | `roc-ubuntu` | Ubuntu 22.04 (port 2223) |
 | `roc-debian` | Debian 12 (port 2224) |
-| `roc-kali` | Kali Linux Minimal (port 2222) |
+| `roc-hermui` | Hermes UI (ivansslo/hermes-ui) |
 | `roc-nethunter` | Kali NetHunter Full (port 2222) |
 
 ### 🌐 Network & Services
@@ -133,7 +133,7 @@ roc-menu
 | **07** | **Google Project** | — | — | Submenu |
 
 ### 🔑 Akses Default:
-- **SSH Password:** `ubuntu`, `debian`, `kali`, atau `nethunter`
+- **SSH Password:** `ubuntu`, `debian`, atau `nethunter`
 - **VNC Password:** `vncpass`
 
 ---
@@ -159,7 +159,7 @@ roc-menu
 ├── os/
 │   ├── ubuntu/           # Ubuntu container
 │   ├── debian/           # Debian container
-│   ├── kali/             # Kali container
+│   ├── hermui/           # Hermes UI
 │   └── nethunter/        # NetHunter container
 └── apps/
     ├── roc-agent/        # AI Agent CLI (roc-agentsroute)

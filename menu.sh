@@ -97,7 +97,7 @@ while true; do
 
   print_section "🛡️  Security & Pentest"
   print_item  03  "Kali NetHunter (Full)"          2222  "sec"
-  print_item  04  "Kali Linux (Minimal)"           2222  "sec"
+  print_item  04  "Hermes UI"                       ""    "app"
 
   print_section "☁️  Apps & Dev"
   print_item  05  "JupyterLab / Dev"               8888  "app"
@@ -130,7 +130,7 @@ while true; do
       echo -en "  Continue? [y/N]: " ; read -r confirm
       [[ "${confirm,,}" == "y" ]] && launch_with_port "$SCRIPT_DIR/os/nethunter/nethunter.sh" 2222
       ;;
-    4|04) ensure_udocker; launch_with_port "$SCRIPT_DIR/os/kali/kali.sh" 2222 ;;
+    4|04) run_script "$SCRIPT_DIR/apps/hermui/hermui.sh" ;;
 
     5|05) ensure_udocker; launch_with_port "$SCRIPT_DIR/apps/jupyter/jupyter.sh" 8888 ;;
     6|06) run_script "$SCRIPT_DIR/lib/cli_command.sh" ;;
