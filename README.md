@@ -49,7 +49,7 @@ Setelah install, semua command langsung tersedia:
 | `roc-httpd` | HTTP Server (port 3000) |
 | `roc-spwr` | Superpowers (coding agent skills) |
 | `roc-ros` | ROS Robot OS |
-| `roc-calibre` | Calibre-Web e-books |
+| `roc-maagba` | Multi-Agent Architectural Guidance (Bedrock AgentCore) |
 
 ### ⚙️ System
 | Command | Fungsi |
@@ -172,7 +172,9 @@ roc-menu
     ├── httpd/            # HTTP Server
     ├── redis/            # Redis
     ├── ros/              # ROS
-    └── calibre-web/      # Calibre e-books
+    ├── spwr/              # Superpowers (coding agent skills)
+    ├── hms/               # Hermes Agent (container)
+    └── maagba/            # Multi-Agent Architectural Guidance (Bedrock AgentCore)
 ```
 
 ---

@@ -136,7 +136,7 @@ make_cmd "roc-tailscale"   "apps/tailscale/tailscale.sh"  "Tailscale VPN node"
 make_cmd "roc-httpd"       "apps/httpd/httpd.sh"          "HTTP Server (port 3000)"
 make_cmd "roc-spwr"  "apps/spwr/spwr.sh"  "Superpowers (coding agent skills)"
 make_cmd "roc-ros"         "apps/ros/ros.sh"              "ROS Robot OS"
-make_cmd "roc-calibre"     "apps/calibre-web/calibre-web.sh" "Calibre-Web e-books"
+make_cmd "roc-maagba"     "apps/maagba/maagba.sh"     "Multi-Agent Architectural Guidance (Bedrock AgentCore)"
 
 # ── Google Cloud ──
 make_cmd "roc-gcp"         "lib/google_project.sh"        "Google Project (GCP)"
