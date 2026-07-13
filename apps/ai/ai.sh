@@ -4,9 +4,9 @@
 #  License: MIT
 #  Repo: https://github.com/ivansslo/roc-containers
 # ─────────────────────────────────────────────────────────────────
-#  roc-containers · RoadFX AI Stack (roc-ai)
-#  ⭐ PRIMARY TOOL — AI service container + local update
+#  roc-containers · RoadFX AI Stack (roc-ai) ⭐ PRIMARY
 #  Clone: ivansslo/roadfx-ai-stack
+#  Module: ivansslo/lsmod (Agent/Chat/Coding/Error)
 # ─────────────────────────────────────────────────────────────────
 
 source "$(dirname "${BASH_SOURCE[0]}")/../../lib/source.env" 2>/dev/null || true
@@ -19,12 +19,12 @@ source "$(dirname "${BASH_SOURCE[0]}")/../../lib/source.env" 2>/dev/null || true
 AI_DIR="$HOME/.roc-containers/apps/ai/roadfx-ai-stack"
 AI_REPO="https://github.com/ivansslo/roadfx-ai-stack"
 AI_DATA_DIR="$HOME/.roc-containers/data-roadfx-ai"
+LSMOD_SH="$(dirname "${BASH_SOURCE[0]}")/lsmod.sh"
 
 # ──────────────────────────────────────────────────────────────
 #  Core Functions
 # ──────────────────────────────────────────────────────────────
 
-# Clone or update roadfx-ai-stack
 ai_ensure() {
   if [ ! -d "$AI_DIR/.git" ]; then
     echo -e "${YELLOW}[*] Cloning RoadFX AI Stack...${RESET}"
@@ -46,7 +46,6 @@ ai_ensure() {
   mkdir -p "$AI_DATA_DIR"
 }
 
-# Auto-update check (silent, non-blocking)
 ai_auto_update() {
   if [ -d "$AI_DIR/.git" ]; then
     local last_update="$AI_DATA_DIR/.last_update"
@@ -56,7 +55,7 @@ ai_auto_update() {
     if [ -f "$last_update" ]; then
       local last=$(cat "$last_update" 2>/dev/null || echo 0)
       if [ $((now - last)) -lt "$interval" ]; then
-        return 0  # Too soon, skip
+        return 0
       fi
     fi
 
@@ -73,7 +72,6 @@ ai_auto_update() {
   fi
 }
 
-# Install dependencies
 ai_install() {
   ai_ensure
 
@@ -82,7 +80,6 @@ ai_install() {
   # Python dependencies
   if [ -f "$AI_DIR/requirements.txt" ]; then
     echo -e "${YELLOW}[*] Installing Python dependencies...${RESET}"
-    local py="python3"
     if [ -x "$HOME/.hermes/python3_venv/bin/pip" ]; then
       "$HOME/.hermes/python3_venv/bin/pip" install -r "$AI_DIR/requirements.txt" 2>/dev/null || true
     elif command -v pip &>/dev/null; then
@@ -102,22 +99,21 @@ ai_install() {
     fi
   fi
 
-  # Docker Compose check
-  if [ -f "$AI_DIR/docker-compose.yml" ] || [ -f "$AI_DIR/docker-compose.yaml" ]; then
-    echo -e "${DIM}[*] Docker Compose file detected${RESET}"
+  # Install lsmod module system
+  echo -e "${YELLOW}[*] Installing lsmod module system...${RESET}"
+  if [ -f "$LSMOD_SH" ]; then
+    bash "$LSMOD_SH" install
   fi
 
   echo -e "${GREEN}[✓] RoadFX AI Stack setup selesai${RESET}"
 }
 
-# Run / start the AI stack
 ai_run() {
   ai_ensure
   ai_auto_update
 
   echo -e "${YELLOW}[*] Starting RoadFX AI Stack...${RESET}"
 
-  # Try different entry points
   if [ -f "$AI_DIR/docker-compose.yml" ] || [ -f "$AI_DIR/docker-compose.yaml" ]; then
     echo -e "${YELLOW}[*] Detected docker-compose. Starting services...${RESET}"
     cd "$AI_DIR"
@@ -151,41 +147,46 @@ ai_run() {
   fi
 }
 
-# Status — check all services
 ai_status() {
   echo -e "${CYAN}${BOLD}"
   echo " ╔══════════════════════════════════════════════════════╗"
-  echo " ║  RoadFX AI Stack — Service Status                   ║"
+  echo " ║  ⭐ RoadFX AI Stack — Full Status                   ║"
   echo " ╚══════════════════════════════════════════════════════╝"
   echo -e "${RESET}"
 
-  # Repo status
+  # ── Repo Status ──
+  echo -e "  ${BOLD}${YELLOW}── Stack Repo ──${RESET}"
   if [ -d "$AI_DIR/.git" ]; then
     local version=$(git -C "$AI_DIR" describe --tags --always 2>/dev/null || git -C "$AI_DIR" rev-parse --short HEAD 2>/dev/null)
     local branch=$(git -C "$AI_DIR" rev-parse --abbrev-ref HEAD 2>/dev/null)
     local last_pull=$(git -C "$AI_DIR" log -1 --format="%ar" 2>/dev/null)
-    echo -e "  ${BOLD}Repo:${RESET}    ${GREEN}✓ installed${RESET}  ${DIM}($branch @ $version, $last_pull)${RESET}"
+    echo -e "  ${BOLD}roadfx-ai-stack:${RESET}  ${GREEN}✓ installed${RESET}  ${DIM}($branch @ $version, $last_pull)${RESET}"
   else
-    echo -e "  ${BOLD}Repo:${RESET}    ${RED}✗ not cloned${RESET}"
+    echo -e "  ${BOLD}roadfx-ai-stack:${RESET}  ${RED}✗ not cloned${RESET}"
   fi
 
-  # Python
+  # ── lsmod Module Status ──
+  echo -e "\n  ${BOLD}${MAGENTA}── lsmod Modules ──${RESET}"
+  if [ -f "$LSMOD_SH" ]; then
+    bash "$LSMOD_SH" status 2>/dev/null
+  else
+    echo -e "  ${RED}✗ lsmod.sh not found${RESET}"
+  fi
+
+  # ── Runtime ──
+  echo -e "\n  ${BOLD}${GREEN}── Runtime ──${RESET}"
   if command -v python3 &>/dev/null; then
-    local pyver=$(python3 --version 2>/dev/null)
-    echo -e "  ${BOLD}Python:${RESET}  ${GREEN}✓ $pyver${RESET}"
+    echo -e "  ${BOLD}Python:${RESET}  ${GREEN}✓ $(python3 --version 2>/dev/null)${RESET}"
   else
     echo -e "  ${BOLD}Python:${RESET}  ${RED}✗ not installed${RESET}"
   fi
 
-  # Node.js
   if command -v node &>/dev/null; then
-    local nodever=$(node --version 2>/dev/null)
-    echo -e "  ${BOLD}Node.js:${RESET} ${GREEN}✓ $nodever${RESET}"
+    echo -e "  ${BOLD}Node.js:${RESET} ${GREEN}✓ $(node --version 2>/dev/null)${RESET}"
   else
     echo -e "  ${BOLD}Node.js:${RESET} ${YELLOW}— not installed${RESET}"
   fi
 
-  # Docker / udocker
   if command -v docker &>/dev/null; then
     echo -e "  ${BOLD}Docker:${RESET}  ${GREEN}✓ $(docker --version 2>/dev/null)${RESET}"
   elif command -v udocker &>/dev/null; then
@@ -194,7 +195,7 @@ ai_status() {
     echo -e "  ${BOLD}Docker:${RESET}  ${YELLOW}— not available${RESET}"
   fi
 
-  # Running containers
+  # ── Running Containers ──
   local containers=""
   if command -v udocker &>/dev/null; then
     containers=$(udocker ps 2>/dev/null | tail -n +2)
@@ -208,9 +209,8 @@ ai_status() {
     echo -e "\n  ${DIM}No running containers${RESET}"
   fi
 
-  # API Keys check
-  echo -e "\n  ${BOLD}API Keys:${RESET}"
-  local keys_found=0
+  # ── API Keys ──
+  echo -e "\n  ${BOLD}${CYAN}── API Keys ──${RESET}"
   [ -f "$HOME/.hermes_keys" ] && source "$HOME/.hermes_keys" 2>/dev/null
   if [ -f "$HOME/.hermes/.keys" ]; then
     while IFS='=' read -r key val; do
@@ -219,6 +219,7 @@ ai_status() {
       [ -z "${!key:-}" ] && export "$key=$val"
     done < "$HOME/.hermes/.keys"
   fi
+  local keys_found=0
   for k in GROQ_KEY GEMINI_API_KEY OR_KEY OPENAI_KEY TOKEN; do
     if [ -n "${!k:-}" ]; then
       echo -e "  ${GREEN}✓${RESET} $k ${DIM}(${!k:0:8}...)${RESET}"
@@ -227,13 +228,11 @@ ai_status() {
       echo -e "  ${RED}✗${RESET} $k ${DIM}(not set)${RESET}"
     fi
   done
-
   if [ "$keys_found" -eq 0 ]; then
     echo -e "\n  ${YELLOW}[!] Belum ada API keys. Jalankan:${RESET} ${CYAN}roc-agent setup${RESET}"
   fi
 }
 
-# Docs
 ai_docs() {
   ai_ensure
   if [ -f "$AI_DIR/README.md" ]; then
@@ -243,7 +242,6 @@ ai_docs() {
   fi
 }
 
-# List
 ai_list() {
   ai_ensure
   echo -e "${BOLD}RoadFX AI Stack — Repo Contents:${RESET}\n"
@@ -252,14 +250,12 @@ ai_list() {
   echo -e "${DIM}Path: $AI_DIR${RESET}"
 }
 
-# Shell
 ai_shell() {
   ai_ensure
   echo -e "${DIM}RoadFX AI Stack dir: $AI_DIR${RESET}"
   cd "$AI_DIR" && exec bash
 }
 
-# Update (force)
 ai_update() {
   if [ ! -d "$AI_DIR/.git" ]; then
     ai_ensure
@@ -281,6 +277,12 @@ ai_update() {
     echo -e "${DIM}[*] Re-checking npm deps...${RESET}"
     cd "$AI_DIR" && npm install --silent 2>/dev/null || true
   fi
+
+  # Update lsmod too
+  if [ -f "$LSMOD_SH" ]; then
+    echo -e "${DIM}[*] Updating lsmod modules...${RESET}"
+    bash "$LSMOD_SH" update 2>/dev/null || true
+  fi
 }
 
 # ──────────────────────────────────────────────────────────────
@@ -294,24 +296,76 @@ ai_main() {
     echo " ╔══════════════════════════════════════════════════════╗"
     echo " ║  ⭐ RoadFX AI Stack — roc-ai                       ║"
     echo " ║  ivansslo/roadfx-ai-stack                           ║"
+    echo " ║  Module: ivansslo/lsmod                             ║"
     echo " ╚══════════════════════════════════════════════════════╝"
     echo -e "${RESET}"
-    echo -e "  ${BOLD}Main AI service container — always updated${RESET}\n"
-    echo -e " ${BOLD}Usage:${RESET}"
-    echo -e "  ${CYAN}roc-ai install${RESET}   Clone & install dependencies"
-    echo -e "  ${CYAN}roc-ai run${RESET}       Start AI stack services"
-    echo -e "  ${CYAN}roc-ai status${RESET}    Check all services & keys status"
-    echo -e "  ${CYAN}roc-ai docs${RESET}      View README"
-    echo -e "  ${CYAN}roc-ai list${RESET}      List repo contents"
-    echo -e "  ${CYAN}roc-ai shell${RESET}     Open shell in repo dir"
-    echo -e "  ${CYAN}roc-ai update${RESET}    Force update to latest"
+    echo -e "  ${BOLD}⭐ Primary AI service — always updated${RESET}\n"
+    echo -e " ${BOLD}${MAGENTA}lsmod Modes:${RESET}"
+    echo -e "  ${CYAN}roc-ai agent <task>${RESET}  🤖 Agent Mode"
+    echo -e "  ${CYAN}roc-ai chat${RESET}          💬 Chat Mode (interactive)"
+    echo -e "  ${CYAN}roc-ai code <task>${RESET}   💻 Coding Mode"
+    echo -e "  ${CYAN}roc-ai error <msg>${RESET}   🐛 Error Handler / Fix"
     echo ""
-    echo -e " ${DIM}Repo: ivansslo/roadfx-ai-stack${RESET}"
+    echo -e " ${BOLD}${CYAN}Management:${RESET}"
+    echo -e "  ${CYAN}roc-ai install${RESET}      Install stack + lsmod modules"
+    echo -e "  ${CYAN}roc-ai run${RESET}          Start AI stack services"
+    echo -e "  ${CYAN}roc-ai status${RESET}       Check all services & keys"
+    echo -e "  ${CYAN}roc-ai update${RESET}       Force update to latest"
+    echo -e "  ${CYAN}roc-ai docs${RESET}         View README"
+    echo -e "  ${CYAN}roc-ai list${RESET}         List repo contents"
+    echo -e "  ${CYAN}roc-ai shell${RESET}        Open shell in repo dir"
+    echo -e "  ${CYAN}roc-ai native${RESET}       Run lsmod native CLI"
+    echo ""
+    echo -e " ${DIM}Stack: ivansslo/roadfx-ai-stack${RESET}"
+    echo -e " ${DIM}Module: ivansslo/lsmod${RESET}"
     echo -e " ${DIM}Path: $AI_DIR${RESET}"
     return 0
   fi
 
   case "$cmd" in
+    # ── lsmod Modes ──
+    agent|a)
+      shift
+      if [ -f "$LSMOD_SH" ]; then
+        bash "$LSMOD_SH" agent "$@"
+      else
+        echo -e "${RED}[✗] lsmod not found. Run: roc-ai install${RESET}"
+      fi
+      ;;
+    chat|c)
+      shift
+      if [ -f "$LSMOD_SH" ]; then
+        bash "$LSMOD_SH" chat "$@"
+      else
+        echo -e "${RED}[✗] lsmod not found. Run: roc-ai install${RESET}"
+      fi
+      ;;
+    code|coding|co)
+      shift
+      if [ -f "$LSMOD_SH" ]; then
+        bash "$LSMOD_SH" code "$@"
+      else
+        echo -e "${RED}[✗] lsmod not found. Run: roc-ai install${RESET}"
+      fi
+      ;;
+    error|err|e|fix)
+      shift
+      if [ -f "$LSMOD_SH" ]; then
+        bash "$LSMOD_SH" error "$@"
+      else
+        echo -e "${RED}[✗] lsmod not found. Run: roc-ai install${RESET}"
+      fi
+      ;;
+    native|lsmod|l)
+      shift
+      if [ -f "$LSMOD_SH" ]; then
+        bash "$LSMOD_SH" native "$@"
+      else
+        echo -e "${RED}[✗] lsmod not found. Run: roc-ai install${RESET}"
+      fi
+      ;;
+
+    # ── Stack Management ──
     install|setup|i)
       ai_install
       ;;

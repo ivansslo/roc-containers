@@ -131,25 +131,40 @@ roc-menu
 
 ---
 
-## ⭐ roc-ai — RoadFX AI Stack
+## ⭐ roc-ai — RoadFX AI Stack + lsmod
 
-**Command utama** — AI service container yang selalu up-to-date:
+**Command utama** — AI service container yang selalu up-to-date + module system.
+
+### lsmod Modes (Agent/Chat/Coding/Error)
+
+| Sub-command | Fungsi |
+|---|---|
+| `roc-ai agent <task>` | 🤖 Agent Mode — delegasi tugas ke AI agent |
+| `roc-ai chat` | 💬 Chat Mode — interactive chat dengan AI |
+| `roc-ai code <task>` | 💻 Coding Mode — AI coding assistant |
+| `roc-ai error <msg>` | 🐛 Error Handler — analisis & fix error |
+| `roc-ai native` | Run lsmod native CLI (lasokamodule) |
+
+### Stack Management
 
 | Sub-command | Fungsi |
 |---|---|
 | `roc-ai` | Lihat help |
-| `roc-ai install` | Clone repo + install dependencies |
+| `roc-ai install` | Clone stack + lsmod + install dependencies |
 | `roc-ai run` | Start AI stack services |
-| `roc-ai status` | Cek semua services & API keys |
+| `roc-ai status` | Cek semua services, modules, & API keys |
 | `roc-ai update` | Force update ke versi terbaru |
 | `roc-ai docs` | Lihat README |
 | `roc-ai list` | List isi repo |
 | `roc-ai shell` | Buka shell di repo dir |
 
-Fitur:
+### Fitur
+
+- **lsmod Module System**: `ivansslo/lsmod` — Agent, Chat, Coding, Error modes
 - **Auto-update**: Cek update otomatis setiap 1 jam saat `roc-ai run`
-- **Service status**: `roc-ai status` menampilkan repo, Python, Node, Docker, containers, dan API keys
+- **Service status**: `roc-ai status` — repo, modules, Python, Node, Docker, containers, API keys
 - **Always current**: `roc-ai update` pull + re-install deps
+- **Security**: Hardcoded keys dari lsmod auto-sanitized saat install
 
 ---
 
@@ -176,6 +191,9 @@ Fitur:
 │   └── debian/           # Debian container
 └── apps/
     ├── ai/               # ⭐ RoadFX AI Stack (primary)
+    │   ├── ai.sh          # Main AI stack script
+    │   ├── lsmod.sh       # lsmod module system (Agent/Chat/Coding/Error)
+    │   └── modules/       # lsmod cloned repo (auto)
     ├── roc-agent/        # AI Agent CLI (roc-agentsroute)
     ├── hermes-agent/     # Hermes Agent engine
     ├── crewai/           # CrewAI
@@ -199,6 +217,7 @@ Fitur:
 | [roc-containers](https://github.com/ivansslo/roc-containers) | Container manager (ini) |
 | [roc-agentsroute](https://github.com/ivansslo/roc-agentsroute) | AI Agent CLI utama |
 | [roadfx-ai-stack](https://github.com/ivansslo/roadfx-ai-stack) | ⭐ RoadFX AI Stack |
+| [lsmod](https://github.com/ivansslo/lsmod) | Module system (Agent/Chat/Coding/Error) |
 | [clawdex-mobile](https://github.com/ivansslo/clawdex-mobile) | Clawdex Mobile |
 | [hermes-ui](https://github.com/ivansslo/hermes-ui) | Hermes UI |
 | [spwr](https://github.com/ivansslo/spwr) | Superpowers |
