@@ -87,7 +87,7 @@ _default_model_for() {
     openai|oai)   echo "gpt-4.1" ;;
     openrouter|or) echo "anthropic/claude-sonnet-4-5" ;;
     # Prefer Flash as default: free-tier keys often have higher quota than Pro.
-    gemini)       echo "gemini-2.5-flash" ;;
+    gemini)       echo "gemini-3.5-flash" ;;
     groq)         echo "llama-3.3-70b-versatile" ;;
     gateway)      echo "llama-3.3-70b-versatile" ;;
     cloudrun)     echo "llama-3.3-70b-versatile" ;;
@@ -1907,7 +1907,7 @@ cmd_models() {
 
   echo ""
   echo -e "  ${G}💎 Gemini (Direct):${N}"
-  for m in "gemini-2.5-flash" "gemini-2.5-pro" "gemini-2.0-flash" "gemini-1.5-pro"; do
+  for m in "gemini-3.5-flash" "gemini-3.1-pro" "gemini-3-flash" "gemini-2.5-flash" "gemini-2.5-pro" "gemini-2.0-flash" "deep-research-max"; do
     printf "    %-45s" "$m"
     [ -n "$GEMINI_KEY" ] && echo -e "${G}available${N}" || echo -e "${D}(no key)${N}"
   done
@@ -2694,7 +2694,7 @@ cmd_studio() {
       echo -e "${BOLD}🎨 AI Studio Chat${N} — Gemini"
       echo -e "  ${D}Type 'exit' to quit, '/model <name>' to switch${N}\n"
 
-      local model="gemini-2.5-flash"
+      local model="gemini-3.5-flash"
       local messages="[]"
 
       while true; do
@@ -2800,7 +2800,7 @@ print(json.dumps(msgs))
             local question="${input#/ask }"
             if [ -n "$question" ]; then
               echo ""
-              PROVIDER=gemini MODEL=gemini-2.5-flash cmd_ask "$question"
+              PROVIDER=gemini MODEL=gemini-3.5-flash cmd_ask "$question"
               echo ""
             else
               warn "Usage: /ask <question>"
@@ -2839,7 +2839,7 @@ print(json.dumps(msgs))
           *)
             # Treat as a question to AI
             echo ""
-            PROVIDER=gemini MODEL=gemini-2.5-flash cmd_ask "$input"
+            PROVIDER=gemini MODEL=gemini-3.5-flash cmd_ask "$input"
             echo ""
             ;;
         esac
