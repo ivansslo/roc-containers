@@ -29,6 +29,7 @@ Setelah install, semua command langsung tersedia:
 | Command | Fungsi |
 |---|---|
 | `roc-ai` | ⭐ **RoadFX AI Stack** — ivansslo/roadfx-ai-stack |
+| `roc-ai mesh` | 🕸️ AI Agent Mesh — cek koneksi semua agents |
 
 ### 🤖 AI & Agent
 | Command | Fungsi |
@@ -77,13 +78,84 @@ roc-agent setup
 # Atau manual
 cat > ~/.hermes_keys << 'EOF'
 GROQ_KEY=gsk_xxxxxx
-GEMINI_API_KEY=AIzaSxxxxxx
+GEMINI_KEY=AIzaSxxxxxx
 OR_KEY=sk-or-xxxxxx
 OPENAI_KEY=sk-xxxxxx
 TOKEN=hk-xxxxxx
 EOF
 chmod 600 ~/.hermes_keys
 ```
+
+> ⚠️ **Jangan pernah hardcode keys di source code.** Semua keys di-load dari env.
+
+---
+
+## 🧠 AI Models
+
+### Priority (ai-best)
+```
+Groq (free/fast) → OpenAI → OpenRouter → Gemini → Gateway → CloudRun → CF AI
+```
+
+### OpenAI (Direct) — Default: `gpt-4.1`
+
+| Model | Kategori | Context |
+|---|---|---|
+| `gpt-5` | 🏆 Flagship | 256K |
+| `gpt-5-mini` | ⚡ Efficient | 256K |
+| `gpt-4.1` | 🎯 Default | 1M |
+| `gpt-4.1-mini` | ⚡ Fast | 1M |
+| `gpt-4.1-nano` | 🪶 Lightweight | 1M |
+| `gpt-4o` | 📦 Vision/JSON | 128K |
+| `gpt-4o-mini` | 📦 Fast | 128K |
+| `gpt-4.5-preview` | 🔬 Preview | 256K |
+| `o3-pro` | 🧠 Advanced reasoning | 200K |
+| `o3` | 🧠 Reasoning | 200K |
+| `o3-mini` | 🧠 Reasoning fast | 200K |
+| `o4-mini` | 🧠 Compact | 200K |
+| `codex-mini` | 💻 Coding/SWE | 192K |
+
+### Google AI Studio (Direct) — Default: `gemini-3.5-flash`
+
+50 models tersedia, termasuk:
+
+| Model | Kategori | Context |
+|---|---|---|
+| `gemini-3.5-flash` | 🏆 Latest, fast | 1M |
+| `gemini-3.1-pro` | 🧠 Advanced, custom tools | 2M |
+| `gemini-3.1-flash-lite` | 🪶 Ultra-fast | 1M |
+| `gemini-3-pro` | 🎨 Image gen, advanced | 2M |
+| `gemini-3-flash` | ⚡ Fast, coding | 1M |
+| `gemini-2.5-pro` | 🧠 Reasoning, 2M | 2M |
+| `gemini-2.5-flash` | ⚡ Multimodal | 1M |
+| `gemini-2.5-flash-lite` | 🪶 Lightweight | 1M |
+| `gemini-2.0-flash` | 📦 Stable | 1M |
+| `deep-research-max` | 🔬 Deep research | 2M |
+| `deep-research` | 🔬 Research | 2M |
+| `gemma-4-31b` | 📦 Open-weight | 128K |
+| `imagen-4-ultra` | 🎨 Image generation | — |
+| `imagen-4-fast` | 🎨 Fast image gen | — |
+| `veo-3.1` | 🎬 Video generation | — |
+
+### Groq (Free/Ultra-Fast) — Default: `llama-3.3-70b-versatile`
+
+| Model | Kategori |
+|---|---|
+| `llama-3.3-70b-versatile` | 🏆 Default |
+| `llama-4-scout-17b` | 🆕 Next-gen |
+| `qwen3-32b` | 💻 Coding |
+| `qwen3.6-27b` | 🆕 Latest |
+| `gpt-oss-120b` | 📦 Open-source large |
+| `compound` | 🧠 Agentic reasoning |
+
+### OpenRouter — Default: `anthropic/claude-sonnet-4-5`
+
+| Model | Provider |
+|---|---|
+| `anthropic/claude-sonnet-4-5` | Anthropic |
+| `google/gemini-2.5-pro-preview` | Google |
+| `deepseek/deepseek-r1` | DeepSeek |
+| `qwen/qwen3-235b-a22b` | Alibaba |
 
 ---
 
@@ -100,33 +172,34 @@ roc-menu
 
  ── ⭐ AI Stack (Primary) ──
  [01] RoadFX AI Stack              → roc-ai
+ [02] AI Agent Mesh                → roc-ai mesh
 
  ── 🤖 AI & Agent ──
- [02] AI Agent CLI                 → roc-agent
- [03] CrewAI Multi-Agent           → roc-crewai
- [04] Hermes Agent (container)     → roc-hms
- [05] Antigravity AI IDE           → port 5905
- [06] ADK Invoice Processing       → port 8000
- [07] MAAGBA (Bedrock AgentCore)   → roc-maagba
+ [03] AI Agent CLI                 → roc-agent
+ [04] CrewAI Multi-Agent           → roc-crewai
+ [05] Hermes Agent (container)     → roc-hms
+ [06] Antigravity AI IDE           → port 5905
+ [07] ADK Invoice Processing       → port 8000
+ [08] MAAGBA (Bedrock AgentCore)   → roc-maagba
 
  ── 🐧 Operating Systems ──
- [08] Ubuntu 22.04 LTS             → port 2223
- [09] Debian 12 Bookworm           → port 2224
+ [09] Ubuntu 22.04 LTS             → port 2223
+ [10] Debian 12 Bookworm           → port 2224
 
  ── 🌐 Network & Services ──
- [10] Tailscale VPN                → roc-tailscale
- [11] HTTP Server                  → port 3000
- [12] Superpowers (agent skills)   → roc-spwr
- [13] Hermes UI                    → roc-hermui
- [14] Clawdex Mobile               → roc-clawdex
+ [11] Tailscale VPN                → roc-tailscale
+ [12] HTTP Server                  → port 3000
+ [13] Superpowers (agent skills)   → roc-spwr
+ [14] Hermes UI                    → roc-hermui
+ [15] Clawdex Mobile               → roc-clawdex
 
  ── ⚙️ System ──
- [15] Container Manager (Status)
- [16] Google Cloud (GCP)
- [17] System Info (RAM/CPU)
- [18] Update roc-containers
- [19] Uninstall / Clean
- [20] Reinstall udocker
+ [16] Container Manager (Status)
+ [17] Google Cloud (GCP)
+ [18] System Info (RAM/CPU)
+ [19] Update roc-containers
+ [20] Uninstall / Clean
+ [21] Reinstall udocker
 ```
 
 ---
@@ -166,7 +239,6 @@ roc-ai adalah **pewaris lsmod** — fitur istimewa yang menyebar ke semua AI & A
 
 | Sub-command | Fungsi |
 |---|---|
-| `roc-ai` | Lihat help |
 | `roc-ai install` | Clone stack + lsmod + install dependencies |
 | `roc-ai run` | Start AI stack services |
 | `roc-ai status` | Cek semua services, modules, & API keys |
@@ -180,10 +252,12 @@ roc-ai adalah **pewaris lsmod** — fitur istimewa yang menyebar ke semua AI & A
 - **lsmod Module System**: `ivansslo/lsmod` — Agent, Chat, Coding, Error modes
 - **⭐ Pewaris lsmod**: roc-ai mewarisi semua lsmod + orchestration, routing, broadcast, mesh
 - **lsmod Propagation**: Menyebar ke semua AI & Agent containers via `lib/lsmod_loader.sh`
+- **Google AI Studio**: 50 models langsung via GEMINI_KEY — gemini-3.5-flash, gemini-3.1-pro, deep-research, imagen-4, veo-3.1
+- **OpenAI Direct**: 13 models — gpt-5, gpt-4.1, o3-pro, codex-mini (max 16384 tokens)
 - **Auto-update**: Cek update otomatis setiap 1 jam saat `roc-ai run`
 - **Service status**: `roc-ai status` — repo, modules, Python, Node, Docker, containers, API keys
 - **Always current**: `roc-ai update` pull + re-install deps
-- **Security**: Hardcoded keys dari lsmod auto-sanitized saat install
+- **Security**: Hardcoded keys auto-sanitized, invalid key names skipped
 
 ---
 
@@ -199,6 +273,7 @@ roc-ai adalah **pewaris lsmod** — fitur istimewa yang menyebar ke semua AI & A
 ├── bin/                  # Binary wrappers
 ├── lib/
 │   ├── source.env        # Shared env & udocker helpers
+│   ├── lsmod_loader.sh   # lsmod shared loader (all roc-*)
 │   ├── cli_command.sh    # CLI submenu
 │   ├── google_project.sh # GCP submenu
 │   ├── manager.sh        # Container manager
@@ -211,7 +286,7 @@ roc-ai adalah **pewaris lsmod** — fitur istimewa yang menyebar ke semua AI & A
 └── apps/
     ├── ai/               # ⭐ RoadFX AI Stack (primary)
     │   ├── ai.sh          # Main AI stack script
-    │   ├── lsmod.sh       # lsmod module system (Agent/Chat/Coding/Error)
+    │   ├── lsmod.sh       # lsmod module system (Pewaris)
     │   └── modules/       # lsmod cloned repo (auto)
     ├── roc-agent/        # AI Agent CLI (roc-agentsroute)
     ├── hermes-agent/     # Hermes Agent engine
@@ -235,7 +310,7 @@ roc-ai adalah **pewaris lsmod** — fitur istimewa yang menyebar ke semua AI & A
 |---|---|
 | [roc-containers](https://github.com/ivansslo/roc-containers) | Container manager (ini) |
 | [roc-agentsroute](https://github.com/ivansslo/roc-agentsroute) | AI Agent CLI utama |
-| [roadfx-ai-stack](https://github.com/ivansslo/roadfx-ai-stack) | ⭐ RoadFX AI Stack |
+| [roadfx-ai-stack](https://github.com/ivansslo/roadfx-ai-stack) | ⭐ RoadFX AI Stack (source utama) |
 | [lsmod](https://github.com/ivansslo/lsmod) | Module system (Agent/Chat/Coding/Error) |
 | [clawdex-mobile](https://github.com/ivansslo/clawdex-mobile) | Clawdex Mobile |
 | [hermes-ui](https://github.com/ivansslo/hermes-ui) | Hermes UI |
