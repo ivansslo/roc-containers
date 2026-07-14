@@ -21,6 +21,7 @@
 # ─────────────────────────────────────────────────────────────────
 
 source "$(dirname "${BASH_SOURCE[0]}")/../../lib/lsmod_loader.sh" 2>/dev/null || true
+[ -f "$HOME/.config/hermes/solace.env" ] && source "$HOME/.config/hermes/solace.env" 2>/dev/null
 
 LSMOD_DIR="$HOME/.roc-containers/apps/ai/modules/lsmod"
 LSMOD_REPO="https://github.com/ivansslo/lsmod"

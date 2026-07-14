@@ -304,6 +304,33 @@ roc-ai adalah **pewaris lsmod** — fitur istimewa yang menyebar ke semua AI & A
 
 ---
 
+## 🗄️ Infrastructure
+
+| Service | Provider | Region | Status |
+|---|---|---|---|
+| PostgreSQL | Aiven (`pg-roadfx`) | AWS ap-southeast-3 | business-8 |
+| Solace PubSub+ | Solace Cloud | Singapore | 5 queues, connected |
+| CF Workers Gateway | Cloudflare | Global | 25+ endpoints |
+| Cloud Run | Google Cloud | us-west1 | AI + Data |
+| AI Studio | Google | Global | 50 models |
+
+### Aiven (Managed Database)
+- **Project:** `roadfrx-ai`
+- **Service:** `pg-roadfx` (PostgreSQL, business-8)
+- **Host:** `pg-roadfx-roadfrx-ai.e.aivencloud.com:21876`
+- **PgBouncer:** port 21877
+- **DB:** `defaultdb` / User: `avnadmin`
+- **Commands:** `hermes aiven status|pg-uri|pg-connect|services`
+
+### Solace PubSub+ (Event Mesh)
+- **Broker:** `mr-connection-mwc1f9igml1.messaging.solace.cloud`
+- **VPN:** `roclace-cluster`
+- **Queues:** `hermes/agent/ai-chat`, `hermes/agent/memory`, `hermes/agent/orchestrator`, `hermes/agent/tools`, `hermes/events`
+- **Publish:** `solace_publish <topic> <message>`
+- **Status:** `solace_status`
+
+---
+
 ## 🔧 Related Repos
 
 | Repo | Fungsi |

@@ -1,0 +1,27 @@
+{
+  "name": "roc-containers Dev",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu-22.04",
+  "features": {
+    "ghcr.io/devcontainers/features/common-utils:2": {},
+    "ghcr.io/devcontainers/features/git:1": {}
+  },
+  "postCreateCommand": "chmod +x setup.sh && bash setup.sh --codespace",
+  "forwardPorts": [8080, 3000, 5432],
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-vscode-remote.remote-containers",
+        "foxundermoon.shell-format",
+        "timonwong.shellcheck",
+        "GitHub.copilot"
+      ],
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "bash"
+      }
+    }
+  },
+  "remoteEnv": {
+    "HERMES_HOME": "/workspaces/roc-containers",
+    "ROC_MODE": "codespace"
+  }
+}

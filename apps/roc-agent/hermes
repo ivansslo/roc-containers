@@ -63,6 +63,7 @@ if [ -f "$HERMES_KEYS" ]; then
   done < "$HERMES_KEYS"
 fi
 [ -f "$HERMES_CONFIG" ] && source "$HERMES_CONFIG" 2>/dev/null
+[ -f "$HOME/.config/hermes/solace.env" ] && source "$HOME/.config/hermes/solace.env" 2>/dev/null
 
 # Defaults (only set if still empty — preserves exported env vars)
 TOKEN="${TOKEN:-}"
@@ -311,7 +312,7 @@ cmd_config() {
   echo -e "  ${W}AI Studio:${N}  $AI_STUDIO_URL"
   echo ""
   echo -e "  ${BOLD}Keys:${N}"
-  for k in TOKEN GROQ_KEY OPENAI_KEY OR_KEY GEMINI_KEY CF_TOKEN CF_ACCOUNT GITHUB_PAT MONGO_URI VOYAGE_KEY SOLACE_URL; do
+  for k in TOKEN GROQ_KEY OPENAI_KEY OR_KEY GEMINI_KEY CF_TOKEN CF_ACCOUNT GITHUB_PAT MONGO_URI VOYAGE_KEY SOLACE_URL SOLACE_USER AIVEN_TOKEN; do
     local v="${!k:-}"
     if [ -n "$v" ]; then
       printf "  ${G}✅${N} %-18s ${D}%s...${N}\n" "$k" "${v:0:16}"
@@ -1756,6 +1757,90 @@ except: print(sys.stdin.read()[:3000])
 }
 
 # ═════════════════════════════════════════════════════════════════════════════
+#  AIVEN MANAGED DATABASES
+# ═════════════════════════════════════════════════════════════════════════════
+cmd_aiven() {
+  local sub="${1:-status}"; shift 2>/dev/null
+  [ -z "$AIVEN_TOKEN" ] && { err "AIVEN_TOKEN not set. Run: hermes setup"; return 1; }
+  case "$sub" in
+    status|info)
+      local resp=$(api_call GET "https://api.aiven.io/v1/project/${AIVEN_PROJECT:-roadfrx-ai}/service/${AIVEN_PG_SERVICE:-pg-roadfx}" "" "Bearer $AIVEN_TOKEN")
+      echo "$resp" | python3 -c "
+import json,sys
+try:
+    d=json.load(sys.stdin).get('service',{})
+    print(f\"  Service:    {d.get('service_name','?')}\")
+    print(f\"  Type:       {d.get('service_type','?')}\")
+    print(f\"  State:      {d.get('state','?')}\")
+    print(f\"  Plan:       {d.get('plan','?')}\")
+    print(f\"  Cloud:      {d.get('cloud_name','?')}\")
+    for c in d.get('components',[]):
+        print(f\"  {c.get('component','?'):12s} → {c.get('host','?')}:{c.get('port','?')}\")
+    for u in d.get('users',[]):
+        print(f\"  User:       {u.get('username','?')} ({u.get('type','?')})\")
+    for db in d.get('databases',[]):
+        if isinstance(db,dict):
+            print(f\"  Database:   {db.get('database_name','?')}\")
+        else:
+            print(f\"  Database:   {db}\")
+    backups=d.get('backups',[])
+    if backups:
+        print(f\"  Backups:    {len(backups)} (latest: {backups[-1].get('backup_time','?')[:10]})\")
+except Exception as e: print(f'Error: {e}')
+" 2>/dev/null
+      ;;
+    services)
+      local resp=$(api_call GET "https://api.aiven.io/v1/project/${AIVEN_PROJECT:-roadfrx-ai}/service" "" "Bearer $AIVEN_TOKEN")
+      echo "$resp" | python3 -c "
+import json,sys
+try:
+    d=json.load(sys.stdin)
+    for s in d.get('services',[]):
+        print(f\"  {s.get('service_name','?'):25s} {s.get('service_type','?'):8s} state={s.get('state','?'):12s} plan={s.get('plan','?')}\")
+except: print('No services or error')
+" 2>/dev/null
+      ;;
+    pg-uri)
+      if [ -z "$AIVEN_PG_PASS" ]; then
+        err "AIVEN_PG_PASS not set. Set it in ~/.config/hermes/solace.env"
+        echo "  Format: postgresql://avnadmin:<PASS>@${AIVEN_PG_HOST:-pg-roadfx-roadfrx-ai.e.aivencloud.com}:${AIVEN_PG_PORT:-21876}/defaultdb?sslmode=require"
+        return 1
+      fi
+      echo "postgresql://avnadmin:***@${AIVEN_PG_HOST}:${AIVEN_PG_PORT}/${AIVEN_PG_DB:-defaultdb}?sslmode=require"
+      ;;
+    pg-connect)
+      if command -v psql >/dev/null 2>&1; then
+        if [ -z "$AIVEN_PG_PASS" ]; then
+          err "AIVEN_PG_PASS not set"
+          return 1
+        fi
+        PGPASSWORD="$AIVEN_PG_PASS" psql "host=${AIVEN_PG_HOST} port=${AIVEN_PG_PORT} dbname=${AIVEN_PG_DB:-defaultdb} user=avnadmin sslmode=require"
+      else
+        err "psql not installed. Install with: pkg install postgresql"
+        return 1
+      fi
+      ;;
+    queues|solace)
+      # Bridge: show Aiven PG + Solace status side by side
+      echo -e "  ${BOLD}Aiven PostgreSQL${N}"
+      cmd_aiven status
+      echo ""
+      echo -e "  ${BOLD}Solace Broker${N}"
+      solace_status | python3 -m json.tool 2>/dev/null
+      ;;
+    *)
+      echo ""; echo "  🗄️ Aiven — Managed Database"; echo ""
+      echo "  hermes aiven status     Show PG service status"
+      echo "  hermes aiven services   List all services"
+      echo "  hermes aiven pg-uri     Show connection URI"
+      echo "  hermes aiven pg-connect Connect via psql"
+      echo "  hermes aiven queues     Aiven + Solace status"
+      echo ""
+      ;;
+  esac
+}
+
+# ═════════════════════════════════════════════════════════════════════════════
 #  VOYAGE AI EMBEDDINGS
 # ═════════════════════════════════════════════════════════════════════════════
 cmd_embed() {
@@ -1944,6 +2029,7 @@ cmd_status() {
   [ -n "$OR_KEY" ] && printf "    ${G}✅${N} OpenRouter\n" || printf "    ${R}❌${N} OpenRouter (no key)\n"
   [ -n "$GEMINI_KEY" ] && printf "    ${G}✅${N} Gemini\n" || printf "    ${R}❌${N} Gemini (no key)\n"
   [ -n "$VOYAGE_KEY" ] && printf "    ${G}✅${N} Voyage AI\n" || printf "    ${R}❌${N} Voyage AI (no key)\n"
+  [ -n "$AIVEN_TOKEN" ] && printf "    ${G}✅${N} Aiven DB\n" || printf "    ${R}❌${N} Aiven DB (not configured)\n"
 
   echo ""
   echo -e "  ${P}Infrastructure:${N}"
@@ -1951,6 +2037,7 @@ cmd_status() {
   [ -n "$CF_TOKEN" ] && printf "    ${G}✅${N} Cloudflare API\n" || printf "    ${R}❌${N} Cloudflare API\n"
   [ -n "$MONGO_URI" ] && printf "    ${G}✅${N} MongoDB\n" || printf "    ${R}❌${N} MongoDB\n"
   [ -n "$SOLACE_URL" ] && printf "    ${G}✅${N} Solace\n" || printf "    ${R}❌${N} Solace (not configured)\n"
+  [ -n "$AIVEN_TOKEN" ] && printf "    ${G}✅${N} Aiven DB\n" || printf "    ${R}❌${N} Aiven DB (not configured)\n"
   printf "    ${G}✅${N} Firebase ($FIREBASE_PROJECT)\n"
 }
 
@@ -2172,6 +2259,15 @@ cmd_links() {
   echo -e "  ${G}Firebase:${N}"
   echo -e "    Console:     https://console.firebase.google.com/project/$FIREBASE_PROJECT"
   echo -e "    Hosting:     https://$FIREBASE_PROJECT.web.app"
+  echo ""
+  echo -e "  ${Y}Aiven DB:${N}"
+  echo -e "    Console:     https://console.aiven.io/project/roadfrx-ai"
+  echo -e "    PG Host:     ${AIVEN_PG_HOST:-pg-roadfx-roadfrx-ai.e.aivencloud.com}:${AIVEN_PG_PORT:-21876}"
+  echo -e "    PgBouncer:   ${AIVEN_PG_HOST:-pg-roadfx-roadfrx-ai.e.aivencloud.com}:${AIVEN_PGBOUNCER_PORT:-21877}"
+  echo ""
+  echo -e "  ${C}Solace:${N}"
+  echo -e "    Broker:      ${GATEWAY}/solace/status"
+  echo -e "    Queues:      ${GATEWAY}/solace/queues"
   echo ""
   echo -e "  ${P}GitHub:${N}"
   echo -e "    Profile:     https://github.com/$GH_USER"
@@ -2402,6 +2498,7 @@ cmd_doctor() {
   [ -n "$VOYAGE_KEY" ] && check "VOYAGE_KEY" "ok" "${VOYAGE_KEY:0:12}..." || check "VOYAGE_KEY" "warn" "not set"
   [ -n "$MONGO_URI" ] && check "MONGO_URI" "ok" "configured" || check "MONGO_URI" "warn" "not set"
   [ -n "$SOLACE_URL" ] && check "SOLACE_URL" "ok" "configured" || check "SOLACE_URL" "warn" "not set"
+  [ -n "$AIVEN_TOKEN" ] && check "AIVEN_TOKEN" "ok" "${AIVEN_TOKEN:0:12}..." || check "AIVEN_TOKEN" "warn" "not set"
   [ -n "$FIREBASE_API_KEY" ] && check "FIREBASE_API_KEY" "ok" "Project: $FIREBASE_PROJECT" || check "FIREBASE_API_KEY" "fail" "not set"
   echo ""
 
@@ -3099,6 +3196,7 @@ cmd_help() {
   echo -e "    ${BOLD}code${N} <description>         Generate code from description"
   echo -e "    ${BOLD}crew${N} [topic]               Run CrewAI multi-agent research"
   echo -e "    ${BOLD}embed${N} <text>               Generate Voyage AI embedding"
+  echo -e "    ${BOLD}aiven${N} [status|pg-uri|pg-connect]  Aiven managed database"
   echo ""
   echo -e "  ${B}Web & Data:${N}"
   echo -e "    ${BOLD}crawl${N} <url>                Crawl URL to markdown"
@@ -3147,6 +3245,7 @@ case "${1:-help}" in
   crew)        shift; cmd_crew "$@" ;;
   embed)       shift; cmd_embed "$@" ;;
   firebase|fb) shift; cmd_firebase "$@" ;;
+  aiven|pg)    shift; cmd_aiven "$@" ;;
   models)      shift; cmd_models "$@" ;;
   status)      shift; cmd_status "$@" ;;
   deploy)      shift; cmd_deploy "$@" ;;

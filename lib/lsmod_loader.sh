@@ -26,6 +26,9 @@ LSMOD_DIR="$HOME/.roc-containers/apps/ai/modules/lsmod"
 LSMOD_SH="$HOME/.roc-containers/apps/ai/lsmod.sh"
 ROC_DIR="$HOME/.roc-containers"
 
+# Solace connection (auto-load)
+[ -f "$HOME/.config/hermes/solace.env" ] && source "$HOME/.config/hermes/solace.env" 2>/dev/null
+
 # ──────────────────────────────────────────────────────────────
 #  Colors (safe fallback)
 # ──────────────────────────────────────────────────────────────
@@ -380,3 +383,69 @@ lsmod_broadcast() {
 #  Auto-init: ensure lsmod loaded silently
 # ──────────────────────────────────────────────────────────────
 lsmod_ensure 2>/dev/null || true
+
+# ──────────────────────────────────────────────────────────────
+#  Solace PubSub+ Helper Functions
+# ──────────────────────────────────────────────────────────────
+solace_status() {
+  curl -s "${GATEWAY:-https://hermes-cloudflare.certveis.workers.dev}/solace/status" 2>/dev/null
+}
+
+solace_queues() {
+  curl -s "${GATEWAY:-https://hermes-cloudflare.certveis.workers.dev}/solace/queues" 2>/dev/null
+}
+
+solace_publish() {
+  local topic="${1:?Usage: solace_publish <topic> <message>}"
+  local msg="${2:?Usage: solace_publish <topic> <message>}"
+  if [ -n "$SOLACE_URL" ] && [ -n "$SOLACE_USER" ] && [ -n "$SOLACE_PASS" ]; then
+    curl -s -u "$SOLACE_USER:$SOLACE_PASS" \
+      -X POST \
+      -H "Content-Type: text/plain" \
+      -H "Solace-Delivery-Mode: Direct" \
+      -d "$msg" \
+      "$SOLACE_URL/Topic/$topic" 2>/dev/null
+  else
+    echo '{"error":"Solace not configured"}'
+  fi
+}
+
+solace_publish_json() {
+  local topic="${1:?Usage: solace_publish_json <topic> <json>}"
+  local json="${2:?Usage: solace_publish_json <topic> <json>}"
+  if [ -n "$SOLACE_URL" ] && [ -n "$SOLACE_USER" ] && [ -n "$SOLACE_PASS" ]; then
+    curl -s -u "$SOLACE_USER:$SOLACE_PASS" \
+      -X POST \
+      -H "Content-Type: application/json" \
+      -H "Solace-Delivery-Mode: Persistent" \
+      -d "$json" \
+      "$SOLACE_URL/Topic/$topic" 2>/dev/null
+  else
+    echo '{"error":"Solace not configured"}'
+  fi
+}
+
+solace_is_connected() {
+  [ -n "$SOLACE_URL" ] && [ -n "$SOLACE_USER" ] && [ -n "$SOLACE_PASS" ]
+}
+
+# ──────────────────────────────────────────────────────────────
+#  Aiven Helper Functions
+# ──────────────────────────────────────────────────────────────
+aiven_status() {
+  [ -n "$AIVEN_TOKEN" ] && [ -n "$AIVEN_PROJECT" ] || { echo '{"error":"Aiven not configured"}'; return 1; }
+  curl -s -H "Authorization: Bearer $AIVEN_TOKEN" \
+    "https://api.aiven.io/v1/project/$AIVEN_PROJECT/service/${AIVEN_PG_SERVICE:-pg-roadfx}" 2>/dev/null
+}
+
+aiven_pg_uri() {
+  if [ -z "$AIVEN_PG_PASS" ]; then
+    echo "postgresql://avnadmin:***@${AIVEN_PG_HOST:-pg-roadfx-roadfrx-ai.e.aivencloud.com}:${AIVEN_PG_PORT:-21876}/${AIVEN_PG_DB:-defaultdb}?sslmode=require"
+  else
+    echo "postgresql://avnadmin:${AIVEN_PG_PASS}@${AIVEN_PG_HOST:-pg-roadfx-roadfrx-ai.e.aivencloud.com}:${AIVEN_PG_PORT:-21876}/${AIVEN_PG_DB:-defaultdb}?sslmode=require"
+  fi
+}
+
+aiven_is_configured() {
+  [ -n "$AIVEN_TOKEN" ] && [ -n "$AIVEN_PROJECT" ]
+}
