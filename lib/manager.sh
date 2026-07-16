@@ -74,9 +74,10 @@ list_containers_detailed() {
         4)
             echo -en "  Enter Name to Remove: " ; read -r t
             udocker rm -f "$t" && echo "Removed." ;;
-        0) return ;;
-        *) list_containers_detailed ;;
+        0) _MANAGER_BACK=1 ;;
+        *) list_containers_detailed; return ;;
     esac
+    [ "${_MANAGER_BACK:-}" = "1" ] && return 0
     sleep 1
     list_containers_detailed
 }

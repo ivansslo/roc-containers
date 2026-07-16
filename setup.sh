@@ -10,7 +10,7 @@ RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'
 CYAN='\033[0;36m'; BLUE='\033[0;34m'; MAGENTA='\033[0;35m'
 BOLD='\033[1m'; DIM='\033[2m'; RESET='\033[0m'
 
-VERSION="1.3.0"
+VERSION="1.4.0"
 BIN_DIR="${PREFIX:-$HOME/.local}/bin"
 ROC_DIR="$HOME/.roc-containers"
 
@@ -81,10 +81,14 @@ fi
 # ─── 3. Clone roc-agentsroute (CLI utama) ─────────────
 echo -e "\n${YELLOW}[3/5] Setting up roc-agent CLI...${RESET}"
 AGENT_DIR="$ROC_DIR/apps/roc-agent"
-if [ ! -d "$AGENT_DIR" ]; then
-    git clone --depth 1 https://github.com/ivansslo/roc-agentsroute "$AGENT_DIR"
-else
+if [ -d "$AGENT_DIR/.git" ]; then
     git -C "$AGENT_DIR" pull --ff-only 2>/dev/null || true
+elif [ -f "$AGENT_DIR/hermes" ]; then
+    echo -e "  ${GREEN}✅ hermes CLI ter-bundle (versi lokal)${RESET}"
+else
+    # Dir kosong/hilang → coba clone; repo bisa privat → fallback bundle bawaan gagal total hanya bila file tak ada
+    git clone --depth 1 https://github.com/ivansslo/roc-agentsroute "$AGENT_DIR" 2>/dev/null || \
+        echo -e "  ${YELLOW}⚠ Clone roc-agentsroute gagal (repo privat/offline) — pakai bundle bawaan jika ada${RESET}"
 fi
 
 # ─── 4. Install Python venv untuk roc-agent ───────────
@@ -163,7 +167,7 @@ if [ -f "\$HOME/.hermes/.keys" ]; then
         [[ "\$key" =~ ^#.*\$ || -z "\$key" ]] && continue
         # Skip invalid variable names (e.g. ₣IREBASE_API_KEY with Unicode chars)
         [[ ! "\$key" =~ ^[a-zA-Z_][a-zA-Z0-9_]*\$ ]] && continue
-        val="\${val%\\\"}" ; val="\${val#\\\"}" ; val="\${val%\\'}" ; val="\${val#\\'}"
+        val="\${val%\\"}" ; val="\${val#\\"}" ; val="\${val%\\'}" ; val="\${val#\\'}"
         [ -z "\${!key:-}" ] && export "\$key=\$val"
     done < "\$HOME/.hermes/.keys"
 fi
@@ -199,7 +203,6 @@ make_cmd "roc-gcp"         "lib/google_project.sh"        "Google Project (GCP)"
 
 # ── System ──
 make_cmd "roc-menu"        "menu.sh"                      "roc-containers menu"
-  ${CYAN}roc-agent import${RESET}        Export agent for AI Studio / AIS-DEV
 make_cmd "roc-status"      "lib/manager.sh"               "Container manager"
 make_cmd "roc-sysinfo"     "lib/sysinfo.sh"               "System info"
 make_cmd "roc-update"      "lib/update.sh"                "Update roc-containers"
@@ -217,11 +220,11 @@ echo -e "${DIM}   Mode: ${ENV_MODE} | Bin: ${BIN_DIR}${RESET}\n"
 echo -e " ${BOLD}Quick Start:${RESET}"
 echo -e "  ${CYAN}roc-agent setup${RESET}         Setup API keys"
 echo -e "  ${CYAN}roc-agent chat${RESET}          Chat dengan AI"
-echo -e "  ${CYAN}roc-ai orchestrator <task>  🧠 Autonomous Orchestrator (Planner→... + Grounding)
-  ${CYAN}roc-agent ask 'halo'${RESET}     Quick question"
+echo -e "  ${CYAN}roc-agent ask 'halo'${RESET}     Quick question"
+echo -e "  ${CYAN}roc-agent import${RESET}        Export agent for AI Studio / AIS-DEV"
+echo -e "  ${CYAN}roc-ai orchestrator <t>${RESET} 🧠 Autonomous Orchestrator (Planner→… + Grounding)"
 echo -e "  ${CYAN}roc-remote${RESET}              🌐 Connect ke remote dev"
 echo -e "  ${CYAN}roc-menu${RESET}                Menu utama"
-  ${CYAN}roc-agent import${RESET}        Export agent for AI Studio / AIS-DEV
 echo -e "  ${CYAN}roc-status${RESET}              Cek container status"
 echo ""
 echo -e " ${DIM}Semua command ada di $BIN_DIR/${RESET}"

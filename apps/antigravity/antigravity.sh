@@ -47,7 +47,8 @@ GCP_LOCATION="$(grep -E '^GCP_LOCATION=' ~/.hermes_keys 2>/dev/null | cut -d= -f
 [ -z "$GEMINI_KEY" ] && GEMINI_KEY="$GOOGLE_KEY"
 [ -z "$GCP_LOCATION" ] && GCP_LOCATION="us-central1"
 
-DATA_DIR="$(pwd)/../../data-$CONTAINER_NAME"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+DATA_DIR="$SCRIPT_DIR/../../data-$CONTAINER_NAME"
 mkdir -p "$DATA_DIR/root" "$DATA_DIR/projects"
 
 udocker_check 2>/dev/null

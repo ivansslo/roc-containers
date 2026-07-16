@@ -129,7 +129,7 @@ while true; do
   print_item  00  "Exit"                          ""  "sys"
 
   echo ""
-  echo -en "  ${BOLD}Select option [00-21]: ${RESET}"
+  echo -en "  ${BOLD}Select option [00-22]: ${RESET}"
   read -r choice
 
   case "$choice" in
@@ -138,7 +138,17 @@ while true; do
     2|02) run_script "$SCRIPT_DIR/apps/ai/ai.sh" mesh ;;
 
     # ── 🤖 AI & Agent ──
-    3|03) bash "$PREFIX/bin/roc-agent" "${@:-}" ;;
+    3|03)
+      if command -v roc-agent &>/dev/null; then
+        roc-agent "${@:-}"
+      elif [ -n "${PREFIX:-}" ] && [ -f "$PREFIX/bin/roc-agent" ]; then
+        bash "$PREFIX/bin/roc-agent" "${@:-}"
+      elif [ -f "$SCRIPT_DIR/apps/roc-agent/hermes" ]; then
+        bash "$SCRIPT_DIR/apps/roc-agent/hermes" "${@:-}"
+      else
+        echo -e "  ${RED}roc-agent belum terinstall — jalankan: bash setup.sh${RESET}"; sleep 2
+      fi
+      ;;
     4|04) ensure_udocker; run_script "$SCRIPT_DIR/apps/crewai/crewai.sh" ;;
     5|05) ensure_udocker; run_script "$SCRIPT_DIR/apps/hms/hms.sh" ;;
     6|06) ensure_udocker; launch_with_port "$SCRIPT_DIR/apps/antigravity/antigravity.sh" 5905 ;;

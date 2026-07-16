@@ -1,4 +1,4 @@
-# 🔍 Parameter Audit Report — roadfx.biz.id & Cloud Run ai-vitality
+# 🔍 Parameter Audit Report — roadfx.biz.id & Cloud Run <REDACTED>
 
 **Date:** 2026-07-15
 **Status:** Partially fixed from sandbox, some require manual action
@@ -28,8 +28,8 @@ Should be: CLERK_SECRET_KEY = sk_test_XXXXXXX_REDACTED  (SECRET KEY)
 **This is the same as CLERK_SK** — someone put the public key where the secret key should be.
 
 **Fix:**
-1. Open https://console.cloud.google.com/run?project=yttriferous-magpie-16ppv
-2. Click **ai-vitality** service
+1. Open https://console.cloud.google.com/run?project=<REDACTED>
+2. Click **<REDACTED>** service
 3. Click **"Edit & Deploy New Revision"**
 4. Click the **container** to edit
 5. Find `CLERK_SECRET_KEY` env var
@@ -46,7 +46,7 @@ Should be: CLERK_SECRET_KEY = sk_test_XXXXXXX_REDACTED  (SECRET KEY)
 
 ### 3. SOLACE_API_TOKEN — Truncated
 ```
-Current: eyJhbGciOiJSUzI1NiIs  (only ~20 chars, should be longer)
+Current: <REDACTED>  (only ~20 chars, should be longer)
 ```
 Needs full JWT token.
 
@@ -56,7 +56,7 @@ Needs full JWT token.
 
 ### 4. Cloud Run APP_URL
 ```
-Current: https://ai-vitality-819208434965.us-west1.run.app
+Current: <REDACTED>
 Should add: https://roadfx.biz.id
 ```
 
@@ -88,9 +88,9 @@ All certveis.space subdomains will work once NS is fixed.
 
 ```bash
 # Update Cloud Run env vars (fix CLERK_SECRET_KEY)
-gcloud run services update ai-vitality \
-  --region us-west1 \
-  --project yttriferous-magpie-16ppv \
+gcloud run services update <REDACTED> \
+  --region <REDACTED> \
+  --project <REDACTED> \
   --update-env-vars "CLERK_SECRET_KEY=sk_test_XXXXXXX_REDACTED" \
   --update-env-vars "APP_URL=https://roadfx.biz.id"
 ```

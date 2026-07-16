@@ -19,7 +19,8 @@ case $PORT in
   *) [ "$PORT" -gt 1023 ] && [ "$PORT" -lt 65536 ] || PORT=2082 ;;
 esac
 
-DATA_DIR="$(pwd)/../../data-$CONTAINER_NAME"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+DATA_DIR="$SCRIPT_DIR/../../data-$CONTAINER_NAME"
 mkdir -p "$DATA_DIR/htdocs"
 
 udocker_check

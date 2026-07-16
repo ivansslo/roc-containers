@@ -31,7 +31,8 @@ IMAGE_NAME="ubuntu:22.04"
 CONTAINER_NAME="tailscale-node"
 HOSTNAME_TS="roc-containers-node"
 
-DATA_DIR="$(pwd)/../../data-$CONTAINER_NAME"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+DATA_DIR="$SCRIPT_DIR/../../data-$CONTAINER_NAME"
 mkdir -p "$DATA_DIR/state"
 
 udocker_check 2>/dev/null

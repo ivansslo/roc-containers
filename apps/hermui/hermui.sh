@@ -16,15 +16,19 @@ source "$(dirname "${BASH_SOURCE[0]}")/../../lib/source.env" 2>/dev/null || true
 
 HERMUI_DIR="$HOME/.roc-containers/apps/hermui/hermes-ui"
 HERMUI_REPO="https://github.com/ivansslo/hermes-ui"
+HERMUI_FALLBACK=0
 
 # Clone or update hermes-ui repo
+# FIX v1.4.0: repo ivansslo/hermes-ui tidak lagi publik (404) — jangan
+# exit 1; degradasi gracefully ke dashboard bundel roc-agentsroute.
 hermui_ensure() {
   if [ ! -d "$HERMUI_DIR/.git" ]; then
     echo -e "${YELLOW}[*] Cloning Hermes UI...${RESET}"
     git clone --depth 1 "$HERMUI_REPO" "$HERMUI_DIR" 2>/dev/null
     if [ $? -ne 0 ]; then
-      echo -e "${RED}[✗] Gagal clone repo. Cek koneksi internet.${RESET}"
-      exit 1
+      HERMUI_FALLBACK=1
+      echo -e "${YELLOW}[!] Repo hermes-ui tidak tersedia (404/privat) — pakai dashboard bundel.${RESET}"
+      return 1
     fi
     echo -e "${GREEN}[✓] Repo berhasil di-clone${RESET}"
   else
@@ -33,9 +37,24 @@ hermui_ensure() {
   fi
 }
 
+# Dashboard bundel (roc-agentsroute) sebagai pengganti hermes-ui
+_hermui_dashboard() {
+  local d1="$HOME/.roc-containers/apps/roc-agent/dashboard"
+  local d2="$HOME/.roc-containers/ui"
+  if [ -f "$d1/index.html" ]; then echo "$d1/index.html"
+  elif [ -f "$d2/roc-containers-ui.html" ]; then echo "$d2/roc-containers-ui.html"
+  else echo ""; fi
+}
+
 # Show README / docs
 hermui_docs() {
   hermui_ensure
+  if [ "$HERMUI_FALLBACK" = 1 ]; then
+    echo -e "${CYAN}${BOLD}Hermes UI (fallback) — Dashboard bundel roc-agentsroute${RESET}\n"
+    local f; f="$(_hermui_dashboard)"
+    [ -n "$f" ] && echo -e "  File: ${BOLD}$f${RESET}\n  Jalankan: ${CYAN}roc-hermui run${RESET} untuk menyajikannya di browser."
+    return 0
+  fi
   if [ -f "$HERMUI_DIR/README.md" ]; then
     cat "$HERMUI_DIR/README.md"
   else
@@ -46,6 +65,12 @@ hermui_docs() {
 # List contents
 hermui_list() {
   hermui_ensure
+  if [ "$HERMUI_FALLBACK" = 1 ]; then
+    local f; f="$(_hermui_dashboard)"
+    echo -e "${BOLD}Hermes UI (fallback) — file bundel:${RESET}\n"
+    [ -n "$f" ] && ls -lh "$f" && echo -e "\n${DIM}Path: $f${RESET}"
+    return 0
+  fi
   echo -e "${BOLD}Hermes UI — Repo Contents:${RESET}\n"
   ls -1 "$HERMUI_DIR/" | head -40
   echo ""
@@ -55,6 +80,11 @@ hermui_list() {
 # Open shell in repo dir
 hermui_shell() {
   hermui_ensure
+  if [ "$HERMUI_FALLBACK" = 1 ]; then
+    local f; f="$(_hermui_dashboard)"
+    [ -n "$f" ] && cd "$(dirname "$f")" && exec bash
+    echo -e "${RED}[✗] Tidak ada dir untuk shell${RESET}"; return 1
+  fi
   echo -e "${DIM}Hermes UI dir: $HERMUI_DIR${RESET}"
   cd "$HERMUI_DIR" && exec bash
 }
@@ -92,6 +122,20 @@ hermui_install() {
 # Run / serve
 hermui_run() {
   hermui_ensure
+  if [ "$HERMUI_FALLBACK" = 1 ]; then
+    local f port py
+    f="$(_hermui_dashboard)"
+    if [ -z "$f" ]; then
+      echo -e "${RED}[✗] Dashboard bundel tidak ditemukan. Jalankan roc-update.${RESET}"
+      return 1
+    fi
+    port="${PORT:-8080}"
+    py="python3"; [ -x "$HOME/.hermes/python3_venv/bin/python" ] && py="$HOME/.hermes/python3_venv/bin/python"
+    echo -e "${GREEN}[✓] Hermes UI (dashboard bundel) → http://localhost:$port${RESET}"
+    echo -e "  ${DIM}File: $f  ·  Ctrl+C untuk berhenti${RESET}"
+    (cd "$(dirname "$f")" && exec "$py" -m http.server "$port" --bind 127.0.0.1)
+    return $?
+  fi
   echo -e "${YELLOW}[*] Starting Hermes UI...${RESET}"
 
   # Try npm start first
@@ -136,27 +180,29 @@ hermui_main() {
   fi
 
   case "$cmd" in
-    install|setup|i)
-      hermui_install
-      ;;
-    run|start|serve|s)
-      shift
-      hermui_run "$@"
-      ;;
-    docs|readme|help|h)
-      hermui_docs
-      ;;
-    list|ls)
-      hermui_list
-      ;;
-    shell|sh)
-      hermui_shell
-      ;;
-    update|up|pull)
-      echo -e "${YELLOW}[*] Updating Hermes UI...${RESET}"
-      git -C "$HERMUI_DIR" pull 2>/dev/null || hermui_ensure
-      echo -e "${GREEN}[✓] Updated${RESET}"
-      ;;
+install|setup|i)
+  if hermui_ensure && [ "$HERMUI_FALLBACK" != 1 ]; then hermui_install
+  else echo -e "${GREEN}[✓] Fallback aktif — tidak ada dependency (single-file dashboard)${RESET}"; fi
+  ;;
+run|start|serve|s)
+  shift
+  hermui_run "$@"
+  ;;
+docs|readme|help|h)
+  hermui_docs
+  ;;
+list|ls)
+  hermui_list
+  ;;
+shell|sh)
+  hermui_shell
+  ;;
+update|up|pull)
+  echo -e "${YELLOW}[*] Updating Hermes UI...${RESET}"
+  if [ -d "$HERMUI_DIR/.git" ]; then git -C "$HERMUI_DIR" pull --ff-only 2>/dev/null || true
+  else hermui_ensure || true; fi
+  echo -e "${GREEN}[✓] Updated${RESET}"
+  ;;
     clone)
       hermui_ensure
       ;;

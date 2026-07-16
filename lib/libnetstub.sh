@@ -9,9 +9,9 @@
 
 load_libnetstub(){
 
-mkdir -p /.libnetstub
-
-cd /.libnetstub
+LIBNETSTUB_DIR="${TMPDIR:-/tmp}/.libnetstub"
+mkdir -p "$LIBNETSTUB_DIR" || return 1
+cd "$LIBNETSTUB_DIR" || return 1
 
 # Check dependencies
 for cmd in gcc; do

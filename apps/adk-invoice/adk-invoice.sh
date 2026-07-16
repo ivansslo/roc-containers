@@ -49,7 +49,8 @@ GCP_SA="$(grep -E '^GOOGLE_APPLICATION_CREDENTIALS=' ~/.hermes_keys 2>/dev/null 
 [ -z "$GCP_USE_VERTEX" ] && GCP_USE_VERTEX="true"
 VERTEX_FLAG="FALSE"; [ "$GCP_USE_VERTEX" = "true" ] && VERTEX_FLAG="TRUE"
 
-DATA_DIR="$(pwd)/../../data-$CONTAINER_NAME"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+DATA_DIR="$SCRIPT_DIR/../../data-$CONTAINER_NAME"
 mkdir -p "$DATA_DIR/root"
 
 # Mount service-account JSON into the container if configured

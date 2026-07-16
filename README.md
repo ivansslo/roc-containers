@@ -2,7 +2,7 @@
 
 **Container Manager + AI Agent CLI for Termux** — Run Docker images di Termux tanpa root, dengan [udocker](https://github.com/indigo-dc/udocker).
 
-> **v1.2.0** · Created by: ivansslo (2026) · **License: MIT**
+> **v1.4.0** · Created by: ivansslo (2026) · **License: MIT**
 
 ---
 
@@ -35,7 +35,7 @@ Setelah install, semua command langsung tersedia:
 ### 🤖 AI & Agent
 | Command | Fungsi |
 |---|---|
-| `roc-agent` | AI Agent CLI utama — Hermes v5.9.0 "Unified" |
+| `roc-agent` | AI Agent CLI utama — Hermes v5.12.0 "Oracle" |
 | `roc-crewai` | CrewAI multi-agent (Groq/Gemini) |
 | `roc-hms` | Hermes Agent (container, root) |
 | `roc-antigravity` | Antigravity AI IDE (port 5905) |
@@ -342,7 +342,7 @@ roc-ai adalah **pewaris lsmod** — fitur istimewa yang menyebar ke semua AI & A
 |---|---|
 | [⭐ rocspace](https://github.com/ivansslo/rocspace) | **Monorepo utama** — v17.1.1, Turborepo + TypeScript (gateway, site, shared) |
 | [roc-containers](https://github.com/ivansslo/roc-containers) | Container manager (ini) |
-| [roc-agentsroute](https://github.com/ivansslo/roc-agentsroute) | Hermes AI Agent CLI v5.9.0 |
+| [roc-agentsroute](https://github.com/ivansslo/roc-agentsroute) | Hermes AI Agent CLI v5.12.0 |
 | [ai-vitality](https://github.com/ivansslo/ai-vitality) | AI Studio + Cloud Run |
 | [lsmod](https://github.com/ivansslo/lsmod) | Module system (Agent/Chat/Coding/Error) |
 | [clawdex-mobile](https://github.com/ivansslo/clawdex-mobile) | Clawdex Mobile |
@@ -413,4 +413,43 @@ open ~/.roc-containers/ui/roc-containers-ui.html
 Also includes full support for:
 - `roc-ai orchestrator`
 - Auto import to AIS-DEV / AI Studio
+
+---
+
+## 🆕 Changelog
+
+### v1.4.0 — Repair Release (2026-07-16)
+
+Audit penuh repo — **8 bug fungsional diperbaiki**, 2 repo-mati diberi fallback,
+hijyen & keamanan dirapikan:
+
+**CRITICAL fixes:**
+- `setup.sh`: 2 baris `${CYAN}…` nyasar (teks mentah dieksekusi shell) — dengan
+  `set -e` ini **menggugurkan setup sebelum command System ter-install**
+- `DATA_DIR="$(pwd)/../../data-*"` di 7 script (ubuntu, debian, tailscale,
+  httpd, crewai, adk-invoice, antigravity) — data container "nyasar" mengikuti
+  cwd pemanggil → kini direlokasi dari lokasi script (`SCRIPT_DIR`)
+- `apps/hms/hms.sh`: clone ke dir sendiri (selalu gagal) + path engine salah →
+  diganti wrapper ke launcher resmi `apps/hermes-agent/hermes-agent.sh`
+- `apps/spwr/spwr.sh`: hal serupa → clone dialihkan ke subdir `repo/`
+- `lib/manager.sh`: menu `[0] Back` tak pernah keluar (rekursi tak berujung)
+- `lib/source.env`: kini mendefinisikan palet warna — sebelumnya ~15 script
+  UI tampil monokrom karena variabel warna tak pernah diisi
+- `menu.sh`: opsi 03 rusak di luar Termux (`$PREFIX` kosong → `/bin/roc-agent`);
+  prompt kini mencakup opsi 22
+
+**Fallback untuk repo mati (404):**
+- `roc-hermui` → dashboard bundel roc-agentsroute via `python -m http.server`
+- `lsmod` clone gagal → pesan jujur + mode bawaan (agent/chat/code/mesh) tetap jalan
+
+**Bundle & higiene:**
+- `apps/roc-agent/hermes` diperbarui v5.7.3 → **v5.12.0 "Oracle"**
+  (termasuk `hermes vm`, panel AI Studio + Oracle VM, Firebase built-in)
+- Hapus `apps/ai/ai.sh.bak2`; `docs/PARAMETER-AUDIT.md`: 5 nilai rahasia
+  asli direduksi (token terpotong, host, username)
+- `apps/ai/ai.sh`: cabang `orchestrate|orch|o` duplikat dihapus
+  (`orch`/`o` kini alias orchestrator first-class)
+- `lib/libnetstub.sh`: path `/` → `$TMPDIR`; `setup.sh`: clone roc-agentsroute
+  non-fatal + fallback bundle; Quick Start output dirapikan
+- Versi diseragamkan: `VERSION`, `setup.sh`, README, UI HTML (semua 1.4.0)
 

@@ -115,7 +115,7 @@ ai_main() {
       shift
       [ -f "$LSMOD_SH" ] && bash "$LSMOD_SH" error "$@" || echo -e "${RED}lsmod not found${RESET}"
       ;;
-    orchestrate|orch|o)
+    orchestrate)
       shift
       [ -f "$LSMOD_SH" ] && bash "$LSMOD_SH" orchestrate "$@" || echo -e "${RED}lsmod not found${RESET}"
       ;;
@@ -127,8 +127,8 @@ ai_main() {
       [ -f "$LSMOD_SH" ] && bash "$LSMOD_SH" native "$@" || echo -e "${RED}lsmod not found${RESET}"
       ;;
 
-    # NEW FIRST-CLASS: roc-ai orchestrator
-    orchestrator|orchestrate|orch|o)
+    # FIRST-CLASS: roc-ai orchestrator (alias: orch/o)
+    orchestrator|orch|o)
       shift
       echo -e "${MAGENTA}${BOLD}🧠 roc-ai orchestrator — Autonomous Orchestrator${RESET}"
       echo -e "${DIM}Planner→Researcher→Coder→Reviewer→Tester + Grounding | AIS_DEV + Gateway${RESET}"

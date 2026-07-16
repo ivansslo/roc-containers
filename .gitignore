@@ -44,3 +44,18 @@ Thumbs.db
 solace.env
 .config/hermes/
 SECRETS-MASTER.env
+
+# ─── Backups ───────────────────────────────────
+*.bak
+*.bak*
+*.old
+
+# ─── Runtime clones (clone saat dipakai, bukan source) ──
+apps/ai/roadfx-ai-stack/
+apps/ai/modules/
+apps/hermui/hermes-ui/
+apps/clawdex/clawdex-mobile/
+apps/maagba/maagba-repo/
+apps/spwr/repo/
+apps/hms/upstream/
+**/data-root/

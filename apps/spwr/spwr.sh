@@ -6,6 +6,9 @@
 # ─────────────────────────────────────────────────────────────────
 #  roc-containers · Superpowers (spwr)
 #  Coding agent skills & methodology
+#
+#  FIX v1.4.0: clone ke SUBDIR `repo/` — dulu clone langsung ke
+#  dir sendiri (sudah berisi spwr.sh + .git parent) → selalu gagal.
 # ─────────────────────────────────────────────────────────────────
 
 source "$(dirname "${BASH_SOURCE[0]}")/../../lib/source.env" 2>/dev/null || true
@@ -15,25 +18,30 @@ source "$(dirname "${BASH_SOURCE[0]}")/../../lib/source.env" 2>/dev/null || true
 : "${CYAN:=$'\033[0;36m'}"; : "${BOLD:=$'\033[1m'}"; : "${DIM:=$'\033[2m'}"; : "${RESET:=$'\033[0m'}"
 
 SPWR_DIR="$HOME/.roc-containers/apps/spwr"
+SPWR_REPO_DIR="$SPWR_DIR/repo"                     # ← fix: subdir terpisah
 SPWR_REPO="https://github.com/ivansslo/spwr"
 
 # Clone or update spwr repo
 spwr_ensure() {
-  if [ ! -d "$SPWR_DIR/skills" ]; then
+  if [ ! -d "$SPWR_REPO_DIR/.git" ]; then
     echo -e "${YELLOW}[*] Cloning Superpowers...${RESET}"
-    git clone --depth 1 "$SPWR_REPO" "$SPWR_DIR" 2>/dev/null
+    git clone --depth 1 "$SPWR_REPO" "$SPWR_REPO_DIR" 2>/dev/null
+    if [ $? -ne 0 ]; then
+      echo -e "${RED}[✗] Gagal clone ivansslo/spwr (repo privat / offline).${RESET}"
+      return 1
+    fi
   else
     echo -e "${DIM}[*] Updating Superpowers...${RESET}"
-    git -C "$SPWR_DIR" pull --ff-only 2>/dev/null || true
+    git -C "$SPWR_REPO_DIR" pull --ff-only 2>/dev/null || true
   fi
 }
 
 # Install dependencies
 spwr_install() {
-  spwr_ensure
+  spwr_ensure || return 1
   if command -v npm &>/dev/null; then
     echo -e "${YELLOW}[*] Installing npm dependencies...${RESET}"
-    cd "$SPWR_DIR" && npm install --silent 2>/dev/null || true
+    [ -f "$SPWR_REPO_DIR/package.json" ] && (cd "$SPWR_REPO_DIR" && npm install --silent 2>/dev/null || true)
     echo -e "${GREEN}[✓] Superpowers installed${RESET}"
   else
     echo -e "${YELLOW}[!] npm not found. Install: pkg install nodejs${RESET}"
@@ -42,7 +50,6 @@ spwr_install() {
 
 # Run skills
 spwr_run() {
-  spwr_ensure
   local skill="${1:-}"
   if [ -z "$skill" ]; then
     echo -e "${CYAN}${BOLD}"
@@ -64,28 +71,34 @@ spwr_run() {
       spwr_install
       ;;
     skills|list|ls)
-      spwr_ensure
+      spwr_ensure || return 1
       echo -e "${BOLD}Available Skills:${RESET}\n"
-      if [ -d "$SPWR_DIR/skills" ]; then
-        for s in "$SPWR_DIR/skills"/*; do
+      if [ -d "$SPWR_REPO_DIR/skills" ]; then
+        for s in "$SPWR_REPO_DIR/skills"/*; do
           [ -d "$s" ] && echo -e "  ${GREEN}•${RESET} $(basename "$s")"
         done
+      else
+        echo -e "  ${DIM}(folder skills tidak ada di repo)${RESET}"
       fi
       ;;
     docs|help|h)
-      spwr_ensure
-      if [ -f "$SPWR_DIR/README.md" ]; then
-        cat "$SPWR_DIR/README.md" | head -80
+      spwr_ensure || return 1
+      if [ -f "$SPWR_REPO_DIR/README.md" ]; then
+        head -80 "$SPWR_REPO_DIR/README.md"
       fi
       ;;
     shell|sh)
-      spwr_ensure
-      echo -e "${DIM}Spwr dir: $SPWR_DIR${RESET}"
-      cd "$SPWR_DIR" && exec bash
+      spwr_ensure || return 1
+      echo -e "${DIM}Spwr dir: $SPWR_REPO_DIR${RESET}"
+      cd "$SPWR_REPO_DIR" && exec bash
       ;;
     update|up)
       echo -e "${YELLOW}[*] Updating Superpowers...${RESET}"
-      git -C "$SPWR_DIR" pull 2>/dev/null || spwr_ensure
+      if [ -d "$SPWR_REPO_DIR/.git" ]; then
+        git -C "$SPWR_REPO_DIR" pull --ff-only 2>/dev/null || true
+      else
+        spwr_ensure || return 1
+      fi
       echo -e "${GREEN}[✓] Updated${RESET}"
       ;;
     *)

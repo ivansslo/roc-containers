@@ -44,7 +44,8 @@ lsmod_ensure() {
     echo -e "${YELLOW}[lsmod] Cloning module system...${RESET}"
     GIT_TERMINAL_PROMPT=0 git clone --depth 1 https://github.com/ivansslo/lsmod "$LSMOD_DIR" 2>/dev/null
     if [ $? -ne 0 ]; then
-      echo -e "${RED}[lsmod] Gagal clone. Cek koneksi internet.${RESET}"
+      echo -e "${YELLOW}[lsmod] Repo ivansslo/lsmod tidak bisa di-clone (privat/belum rilis/offline).${RESET}"
+      echo -e "${DIM}[lsmod] Mode bawaan tetap jalan: agent/chat/code/error/orchestrate/mesh (via roc-agent).${RESET}"
       return 1
     fi
     # Sanitize hardcoded keys
