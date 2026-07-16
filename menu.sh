@@ -103,6 +103,7 @@ while true; do
   print_item  06  "Antigravity AI IDE"            "port 5905" "ai"
   print_item  07  "ADK Invoice Processing"        "port 8000" "ai"
   print_item  08  "MAAGBA (Bedrock AgentCore)"    "roc-maagba" "ai"
+  print_item  22  "🚀 roc-ai Orchestrator"        "roc-ai orchestrator" "ai"
 
   # ── 🐧 OS Containers ──
   print_section "🐧  Operating Systems"
@@ -143,6 +144,14 @@ while true; do
     6|06) ensure_udocker; launch_with_port "$SCRIPT_DIR/apps/antigravity/antigravity.sh" 5905 ;;
     7|07) ensure_udocker; launch_with_port "$SCRIPT_DIR/apps/adk-invoice/adk-invoice.sh" 8000 ;;
     8|08) run_script "$SCRIPT_DIR/apps/maagba/maagba.sh" ;;
+    22)   # roc-ai orchestrator
+      if command -v roc-ai &>/dev/null; then
+        roc-ai orchestrator
+      else
+        echo -e "${YELLOW}roc-ai not in PATH. Running direct...${RESET}"
+        bash "$SCRIPT_DIR/apps/ai/ai.sh" orchestrator
+      fi
+      ;;
 
     # ── 🐧 OS Containers ──
     9|09) ensure_udocker; launch_with_port "$SCRIPT_DIR/os/ubuntu/ubuntu.sh" 2223 ;;

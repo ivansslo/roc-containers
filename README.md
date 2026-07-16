@@ -30,6 +30,7 @@ Setelah install, semua command langsung tersedia:
 |---|---|
 | `roc-ai` | ⭐ **RocSpace Monorepo — ivansslo/rocspace** |
 | `roc-ai mesh` | 🕸️ AI Agent Mesh — cek koneksi semua agents |
+| `roc-ai orchestrator <task>` | 🧠 **Autonomous Orchestrator** — Planner→Researcher→Coder→Reviewer→Tester + Grounding (full model support, AIS-DEV + Gateway first-class) |
 
 ### 🤖 AI & Agent
 | Command | Fungsi |
@@ -225,6 +226,7 @@ roc-ai adalah **pewaris lsmod** — fitur istimewa yang menyebar ke semua AI & A
 | Sub-command | Fungsi |
 |---|---|
 | `roc-ai orchestrate <task>` | 🎼 Orchestrate semua AI agents untuk task kompleks |
+| `roc-ai orchestrator <task>` | 🧠 Autonomous Orchestrator (Planner→Researcher→Coder→Reviewer→Tester + Grounding) — full support coding/fast/high-thinking/grounding, auto-import to AI Studio |
 | `roc-ai route <task> [ctx]` | 🧭 Route task ke agent yang tepat (auto/crew/hms/adk/code/error) |
 | `roc-ai broadcast <msg>` | 📢 Broadcast pesan ke semua AI agents |
 | `roc-ai mesh` | 🕸️ Cek status koneksi semua AI Agent containers |
@@ -379,3 +381,36 @@ cloudrun.roadfx.biz.id  → CloudRun proxy
 ## 📜 License
 
 MIT License · Created by **ivansslo** · 2026
+
+---
+
+## 🚀 Infrastructure Xloud Vision (Updated 2026-07-16)
+
+**RocSpace as the Unified Infrastructure for All Apps + Autonomous Models**
+
+- **All providers integrated auto**: Gateway (primary) + AIS_DEV (gemini-2.5-flash) + Groq + OpenRouter + Gemini + CF AI
+- **Multi-Orchestra**: Full autonomous loop across containers (Planner → Researcher → Coder → Reviewer → Tester + Grounding)
+- **Big Scale Autonomous Models**: roc-ai orchestrator + hermes orchestrator + lsmod propagation
+- **Auto import**: `roc-agent import` / `hermes import` → clean JSON ready for Google AI Studio / AIS-DEV
+- **First-class AIS_DEV**: `PROVIDER=ais` or `roc-ai orchestrator` uses gemini-2.5-flash for fast + high thinking
+- All commands use the same `TOKEN` auth flow as roc-site
+
+```bash
+roc-ai orchestrator "Create a multi-provider autonomous coding agent mesh"
+roc-agent import "My Big Scale Agent"
+```
+
+
+## 🎨 New UI (v1.3.0)
+
+Modern terminal + dashboard UIs added:
+
+```bash
+# After setup
+open ~/.roc-containers/ui/roc-containers-ui.html
+```
+
+Also includes full support for:
+- `roc-ai orchestrator`
+- Auto import to AIS-DEV / AI Studio
+
