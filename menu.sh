@@ -31,7 +31,7 @@ print_header(){
   echo -e "${CYAN}${BOLD}"
   echo "  ╔══════════════════════════════════════════════════════╗"
   echo "  ║       roc-containers · AI Agent CLI (native)         ║"
-  echo "  ║               v1.5.5 (c) 2026 | @ivansslo            ║"
+  echo "  ║               v1.5.6 (c) 2026 | @ivansslo            ║"
   echo "  ╚══════════════════════════════════════════════════════╝"
   echo -e "${RESET}"
   echo -e "  ${DIM}OS: $(uname -m)${RESET}"
@@ -117,10 +117,17 @@ while true; do
   # ── 🌐 Cloudflare Tunnel (ag.roadfx.biz.id) ──
   print_section "🌐  Cloudflare Tunnel  (ag.roadfx.biz.id → node HP)"
   print_item 22  "Tunnel Setup & Status"         "roc-tunnel (install→login→create→up-bg)" "app"
+
+  # ── 🔑 Akses VM: SSH/VNC/RDP (webvirtcloud.ai.studio) ──
+  print_section "🔑  Akses VM  (SSH · VNC · RDP — webvirtcloud.ai.studio)"
+  print_item 23  "Setup & Status Akses"          "roc-access setup / status" "app"
+  print_item 24  "SSH masuk VM"                  "roc-access ssh" "app"
+  print_item 25  "VNC / noVNC"                   "roc-access vnc" "app"
+  print_item 26  "RDP (xrdp)"                    "roc-access rdp" "app"
   print_item 00  "Exit"                          ""  "sys"
 
   echo ""
-  echo -en "  ${BOLD}Select option [00-22]: ${RESET}"
+  echo -en "  ${BOLD}Select option [00-26]: ${RESET}"
   read -r choice
 
   case "$choice" in
@@ -194,6 +201,16 @@ while true; do
       echo -e "  ${DIM}Alur sekali: roc-tunnel install → login → create → up-bg${RESET}"
       echo -e "  ${DIM}Lalu buka https://ag.roadfx.biz.id${RESET}"
       sleep 4
+      ;;
+
+    # ── 🔑 Akses VM: SSH/VNC/RDP (webvirtcloud.ai.studio) ──
+    23|24|25|26)
+      _acc_arg="status"; [ "$choice" = "24" ] && _acc_arg="ssh"; [ "$choice" = "25" ] && _acc_arg="vnc url"; [ "$choice" = "26" ] && _acc_arg="rdp url"
+      [ "$choice" = "23" ] && _acc_arg="status"
+      if command -v roc-access &>/dev/null; then roc-access $_acc_arg
+      elif [ -f "$SCRIPT_DIR/lib/vmaccess.sh" ]; then bash "$SCRIPT_DIR/lib/vmaccess.sh" $_acc_arg
+      else echo -e "  ${RED}roc-access belum terinstall — jalankan: bash setup.sh${RESET}"; sleep 2; fi
+      [ "$choice" = "23" ] && { echo -e "  ${DIM}Wizard pertama kali: roc-access setup${RESET}"; sleep 2; }
       ;;
 
     0|00|q|Q|exit) echo -e "\n  Goodbye.\n" ; exit 0 ;;

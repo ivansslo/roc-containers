@@ -2,7 +2,7 @@
 
 **AI Agent CLI + App Manager for Termux (native)** — hermes CLI, lsmod v2 module system, RoadFX AI stack, dan tool native lainnya. Dibuat oleh **ivansslo** (2026) · **License: MIT**.
 
-> **v1.5.5 — Native Only + Oracle VM + Antigravity IDE + Cloudflare Tunnel (`roc-tunnel`).** Semua command berbasis container **telah dihapus**
+> **v1.5.6 — Native Only + Oracle VM + Antigravity IDE + Cloudflare Tunnel + `roc-access` (SSH/VNC/RDP).** Semua command berbasis container **telah dihapus**
 > (`roc-ubuntu`, `roc-debian`, `roc-httpd`, `roc-tailscale`, `roc-hms`,
 > `roc-crewai`, `roc-adk`, `roc-antigravity`). udocker tetap tersedia untuk
 > menjalankan container **manual berdasarkan nama**: `udocker run <nama>`.
@@ -181,6 +181,15 @@ MIT License · Created by **ivansslo** · 2026
 ---
 
 ## 🆕 Changelog
+
+### v1.5.6 — `roc-access`: SSH · VNC · RDP Oracle VM (2026-07-17)
+- Wrapper **`roc-access`** (`lib/vmaccess.sh`) — satu pintu akses `webvirtcloud.ai.studio`:
+  - `setup` — wizard: deteksi/buat key (`id_ed25519` → `id_oracle.key` → `id_rsa`), pilih user (`ubuntu`, bisa override), pilih jalur (`pub`/`ts`/`auto`), simpan `~/.roc-containers/vmaccess.conf` (600), cetak pubkey siap-pasang untuk OCI Run Command.
+  - `ssh`/`login` — exec ssh dengan key + jalur auto (publik fallback tailnet), `IdentitiesOnly`, keepalive.
+  - `status` — probe live: SSH (BatchMode `hostname`), port 80, `5905` (AG web), `6905` (AG noVNC), `3389` (RDP).
+  - `vnc url|open|fwd` — noVNC `:6905` langsung / buka browser Termux / SSH tunnel `-L 6905` (tanpa buka firewall).
+  - `rdp url|setup|fwd` — info koneksi + aplikasi Android; `rdp setup` = install **xrdp + dbus-x11** remote via SSH + enable service + iptables; `rdp fwd` = tunnel `-L 3389`.
+- Menu opsi **23–26** + seksi panel UI baru; README/UI sinkron.
 
 ### v1.5.5 — Cloudflare Tunnel `roc-tunnel` (2026-07-17)
 - Wrapper **`roc-tunnel`** (`lib/tunnel.sh`): `install | login | create | up | up-bg | down | status | url | quick`.

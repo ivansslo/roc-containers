@@ -10,7 +10,7 @@ RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'
 CYAN='\033[0;36m'; BLUE='\033[0;34m'; MAGENTA='\033[0;35m'
 BOLD='\033[1m'; DIM='\033[2m'; RESET='\033[0m'
 
-VERSION="1.5.5"
+VERSION="1.5.6"
 BIN_DIR="${PREFIX:-$HOME/.local}/bin"
 ROC_DIR="$HOME/.roc-containers"
 
@@ -220,6 +220,26 @@ TUN_WRAPPER
 chmod +x "$BIN_DIR/roc-tunnel"
 printf "  ${GREEN}✅${RESET} %-20s %s\n" "roc-tunnel" "🌐 Cloudflare Tunnel (ag.roadfx.biz.id)"
 
+# ── ROC-ACCESS: SSH/VNC/RDP ke Oracle VM (webvirtcloud.ai.studio) ──
+cat > "$BIN_DIR/roc-access" << ACC_WRAPPER
+$AGENT_SHEBANG
+# roc-access — 🔑 akses Oracle VM: setup | ssh | status | vnc | rdp
+# Delegate ke lib/vmaccess.sh di repo ROC_containers.
+
+ROC_DIR="\$HOME/.roc-containers"
+LIB_ACC="\$ROC_DIR/lib/vmaccess.sh"
+
+if [ ! -f "\$LIB_ACC" ]; then
+    echo "❌ lib/vmaccess.sh tidak ditemukan: \$LIB_ACC"
+    echo "   Jalankan: bash \$ROC_DIR/setup.sh (git pull dulu bila perlu)"
+    exit 1
+fi
+
+exec bash "\$LIB_ACC" "\$@"
+ACC_WRAPPER
+chmod +x "$BIN_DIR/roc-access"
+printf "  ${GREEN}✅${RESET} %-20s %s\n" "roc-access" "🔑 SSH/VNC/RDP Oracle VM (webvirtcloud.ai.studio)"
+
 # ── ⭐ AI Stack (Primary) ──
 make_cmd "roc-ai"          "apps/ai/ai.sh"              "⭐ RoadFX AI Stack (ivansslo/roadfx-ai-stack)"
 
@@ -271,6 +291,7 @@ echo -e "  ${CYAN}roc-agent import${RESET}        Export agent for AI Studio / A
 echo -e "  ${CYAN}roc-ai orchestrator <t>${RESET} 🧠 Autonomous Orchestrator (Planner→… + Grounding)"
 echo -e "  ${CYAN}roc-vm status${RESET}           🖥️ Oracle VM status (alias: webvirtcloud.ai.studio)"
 echo -e "  ${CYAN}roc-tunnel up-bg${RESET}        🌐 Cloudflare Tunnel → ag.roadfx.biz.id (antigravity.ai.studio)"
+echo -e "  ${CYAN}roc-access setup${RESET}        🔑 Wizard akses VM: SSH/VNC/RDP (webvirtcloud.ai.studio)"
 echo -e "  ${CYAN}roc-remote${RESET}              🌐 Connect ke remote dev"
 echo -e "  ${CYAN}roc-menu${RESET}                Menu utama"
 echo -e "  ${CYAN}roc-status${RESET}              Cek container status"
