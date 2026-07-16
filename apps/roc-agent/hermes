@@ -11,7 +11,7 @@
 
 set -uo pipefail
 
-VERSION="5.12.0"
+VERSION="5.13.0"
 CODENAME="Oracle"
 
 # ─── Paths ───────────────────────────────────────────────────────────────────
@@ -51,6 +51,25 @@ VM_NOVNC_URL="http://$VM_IP/vm/novnc/"              # noVNC console
 VM_TAILSCALE_IP="${VM_TAILSCALE_IP:-100.93.139.73}" # tailnet (butuh tailscale aktif)
 VM_SSH_USER="${VM_SSH_USER:-ubuntu}"
 AI_STUDIO_WVC_LABEL="webvirtcloud.ai.studio"        # alias yang diminta user
+
+# ─── Antigravity IDE (Google · build resmi linux/ARM64) ─────────────────────
+# Dipasang via 'hermes antigravity install' — download pinned URL + verifikasi
+# size & MD5 (dari header GCS build di bawah). Target runtime: Oracle VM
+# (aarch64, GUI via X/noVNC) atau Termux via proot-distro Ubuntu (glibc).
+AG_VER_DEFAULT="2.3.0-5214728084127744"
+AG_VERSION="${ANTIGRAVITY_VERSION:-$AG_VER_DEFAULT}"
+AG_URL_DEFAULT="https://storage.googleapis.com/antigravity-public/antigravity-hub/$AG_VERSION/linux-arm/Antigravity.tar.gz"
+AG_URL="${ANTIGRAVITY_URL:-$AG_URL_DEFAULT}"
+AG_SIZE_EXPECTED=161941577                        # content-length GCS (build pinned)
+AG_MD5_EXPECTED="TgDz78WspgmIJHTw/A5uDQ=="        # x-goog-hash md5 (base64)
+AG_UPDATER_MANIFEST="https://antigravity-hub-auto-updater-974169037036.us-central1.run.app/manifest/"
+AG_PREFIX="${PREFIX:-$HOME/.local}"
+AG_PARENT="${ANTIGRAVITY_HOME:-$AG_PREFIX/opt}"
+AG_DIR="$AG_PARENT/Antigravity-arm64"             # hasil extract (±473 MB)
+AG_BIN="$AG_DIR/antigravity"                      # launcher asli (ELF aarch64)
+AG_LINK="$AG_PREFIX/bin/antigravity"              # symlink command
+AG_STAMP="$AG_DIR/.antigravity-version"           # stamp versi terinstall
+AG_VNC_PORT="${AG_VNC_PORT:-5905}"                # konvensi port vnc (exo roc-antigravity)
 
 # ─── Firebase ────────────────────────────────────────────────────────────────
 # Built-in defaults: project planning-with-ai-36675 (web config — public by design;
@@ -3399,6 +3418,236 @@ cmd_dashboard() {
   esac
 }
 
+# ─── Antigravity IDE — installer & launcher (linux/ARM64) ───────────────────
+_ag_ok()   { echo -e "  ${G}✅${N} $*"; }
+_ag_note() { echo -e "  ${D}$*${N}"; }
+
+_ag_is_default_build() { [ "$AG_URL" = "$AG_URL_DEFAULT" ]; }
+_ag_glibc_ready()      { [ -e /lib/ld-linux-aarch64.so.1 ]; }
+
+_ag_dl() {  # <url> <dest> — https:// dengan resume (-C -)
+  case "$1" in
+    http://*|https://*) curl -fL --retry 3 -C - -o "$2" "$1" ;;
+    *) err "URL tidak didukung: $1 (http(s):// atau file:// / path lokal)"; return 1 ;;
+  esac
+}
+
+_ag_verify() {  # <file> — size + MD5 hanya utk build pinned default
+  local f="$1"
+  _ag_is_default_build || { warn "custom URL/build — verifikasi size/MD5 di-skip"; return 0; }
+  local sz; sz=$(stat -c%s "$f" 2>/dev/null || stat -f%z "$f" 2>/dev/null)
+  [ "$sz" = "$AG_SIZE_EXPECTED" ] || { err "size mismatch: $sz ≠ $AG_SIZE_EXPECTED (download korup / build berubah)"; return 1; }
+  if command -v openssl >/dev/null 2>&1; then
+    local md; md=$(openssl md5 -binary "$f" | base64)
+    [ "$md" = "$AG_MD5_EXPECTED" ] || { err "MD5 mismatch: $md ≠ $AG_MD5_EXPECTED — JANGAN install (bukan build asli)"; return 1; }
+    _ag_ok "verifikasi size + MD5 cocok (build asli)"
+  else
+    warn "openssl tidak ada — MD5 di-skip (size OK)"
+  fi
+}
+
+_ag_install() {  # [--force] [<url-atau-path-lokal>]
+  local force="" custom=""
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --force|-f|update) force=1 ;;
+      http://*|https://*|file://*) custom="$1" ;;
+      /*|./*|../*|~*)            custom="file://$1" ;;   # path lokal (mis. hasil aria2)
+    esac
+    shift
+  done
+  [ -n "$custom" ] && AG_URL="$custom"
+  echo -e "${BOLD}🧩 Antigravity IDE — installer (build resmi linux/ARM64)${N}"
+  _ag_note "Version : v$AG_VERSION"
+  _ag_note "URL     : $AG_URL"
+  _ag_note "Target  : $AG_DIR"
+  if [ -z "$force" ] && [ -x "$AG_BIN" ] && [ -f "$AG_STAMP" ] && [ "$(head -1 "$AG_STAMP")" = "$AG_VERSION" ] && _ag_is_default_build; then
+    _ag_ok "sudah terinstall (v$AG_VERSION) — '--force' utk reinstall"
+    return 0
+  fi
+  mkdir -p "$AG_PARENT"
+  local avail; avail=$(df -Pk "$AG_PARENT" 2>/dev/null | awk 'NR==2{print $4}')
+  if [ -n "$avail" ] && [ "$avail" -lt 768000 ]; then
+    err "disk kurang — butuh ±750MB bebas di $AG_PARENT (tersedia ${avail}KB)"; return 1
+  fi
+  local tmp; tmp="$(mktemp -d)"
+  # file:// / path lokal → pakai langsung sumbernya (TANPA copy — hemat tmpfs,
+  # penting di Termux/VM kecil). http(s) → download ke tmp.
+  local blob
+  case "$AG_URL" in
+    file://*) blob="${AG_URL#file://}"
+              [ -f "$blob" ] || { rm -rf "$tmp"; err "file tidak ada: $blob"; return 1; }
+              echo -e "  ${C}▸${N} Pakai file lokal: $blob ($(du -h "$blob" | cut -f1))" ;;
+    *)        blob="$tmp/ag.tar.gz"
+              echo -e "  ${C}▸${N} Download ±154 MB…"
+              _ag_dl "$AG_URL" "$blob" || { rm -rf "$tmp"; err "download gagal"; return 1; } ;;
+  esac
+  _ag_verify "$blob" || { rm -rf "$tmp"; return 1; }
+  echo -e "  ${C}▸${N} Extract (±473 MB)…"
+  mkdir -p "$tmp/x"
+  tar xzf "$blob" -C "$tmp/x" 2>/dev/null || { rm -rf "$tmp"; err "extract gagal (file korup / ruang /tmp habis?)"; return 1; }
+  if [ ! -f "$tmp/x/Antigravity-arm64/antigravity" ]; then
+    rm -rf "$tmp"; err "struktur paket tak dikenali — Antigravity-arm64/ tidak ada"; return 1
+  fi
+  rm -rf "$AG_DIR"
+  mv "$tmp/x/Antigravity-arm64" "$AG_DIR"
+  rm -rf "$tmp"
+  chmod +x "$AG_BIN" "$AG_DIR/chrome-sandbox" "$AG_DIR/chrome_crashpad_handler" 2>/dev/null || true
+  printf '%s\n' "$AG_VERSION" > "$AG_STAMP"
+  mkdir -p "$(dirname "$AG_LINK")"
+  ln -sf "$AG_BIN" "$AG_LINK"
+  _ag_ok "terinstall → $AG_DIR ($(du -sh "$AG_DIR" 2>/dev/null | cut -f1))"
+  _ag_ok "command    → $AG_LINK"
+  case "$(uname -m)" in
+    aarch64|arm64) : ;;
+    *) warn "CPU ini $(uname -m) — paket ARM aarch64 hanya JALAN di ARM (Oracle VM / Termux proot)" ;;
+  esac
+  _ag_note "Jalankan : antigravity launch        desktop/jendela (butuh DISPLAY)"
+  _ag_note "Headless : antigravity vnc [port]    VNC localhost:${AG_VNC_PORT} via Xvfb+x11vnc / Xvnc"
+  _ag_note "Update   : antigravity update        (re-download build pinned)"
+}
+
+_ag_status() {
+  echo -e "${BOLD}🧩 Antigravity IDE — status${N}"
+  echo -e "  ${W}Build pinned:${N} v$AG_VERSION (linux-arm)"
+  echo -e "  ${W}URL:${N}          $AG_URL"
+  echo -e "  ${W}Updater resmi:${N} $AG_UPDATER_MANIFEST"
+  if [ -x "$AG_BIN" ]; then
+    local iv="?"; [ -f "$AG_STAMP" ] && iv="$(head -1 "$AG_STAMP")"
+    echo -e "  ${W}Terinstall:${N}   ${G}YA${N} — v$iv · $(du -sh "$AG_DIR" 2>/dev/null | cut -f1) · $AG_DIR"
+    echo -e "  ${W}Command:${N}      antigravity $([ -L "$AG_LINK" ] && echo -e "(${G}linked${N})" || echo -e "(${Y}symlink hilang${N})")"
+  else
+    echo -e "  ${W}Terinstall:${N}   ${R}BELUM${N} — jalankan: ${BOLD}hermes antigravity install${N}"
+  fi
+  echo ""
+  echo -e "  ${W}Runtime check:${N}"
+  case "$(uname -m)" in
+    aarch64|arm64) echo -e "    ${G}● ok${N}    arch      $(uname -m)" ;;
+    *)             echo -e "    ${Y}◐ cross${N} arch      $(uname -m) — paket aarch64 (RUN butuh ARM)" ;;
+  esac
+  if _ag_glibc_ready; then
+    echo -e "    ${G}● ok${N}    glibc     /lib/ld-linux-aarch64.so.1"
+  else
+    echo -e "    ${Y}◐ note${N}  glibc     interpreter aarch64 tak ada — Termux native pakai ${BOLD}proot-distro${N} / Oracle VM"
+  fi
+  if [ -n "${DISPLAY:-}" ]; then
+    echo -e "    ${G}● ok${N}    DISPLAY   $DISPLAY"
+  else
+    echo -e "    ${D}○ none${N}  DISPLAY   kosong → headless: xvfb-run / 'antigravity vnc'"
+  fi
+  local x=""; command -v xvfb-run >/dev/null 2>&1 && x="$x xvfb-run"; command -v x11vnc >/dev/null 2>&1 && x="$x x11vnc"; command -v Xvnc >/dev/null 2>&1 && x="$x Xvnc"
+  [ -n "$x" ] && echo -e "    ${G}● ok${N}    headless  ${x# }" \
+              || echo -e "    ${D}○ none${N}  headless  xvfb/x11vnc/Xvnc belum ada — install utk mode 'vnc'"
+}
+
+_ag_launch() {
+  [ -x "$AG_BIN" ] || { err "belum terinstall — jalankan: hermes antigravity install"; return 1; }
+  case "$(uname -m)" in
+    aarch64|arm64) : ;;
+    *) err "paket ARM aarch64 tidak bisa jalan di $(uname -m)"; return 1 ;;
+  esac
+  _ag_glibc_ready || { err "interpreter glibc aarch64 tidak ada — pakai proot-distro Ubuntu (Termux) atau Oracle VM"; return 1; }
+  if [ -n "${DISPLAY:-}" ]; then
+    # shellcheck disable=SC2086
+    exec "$AG_BIN" ${ANTIGRAVITY_FLAGS:-} "$@"
+  elif command -v xvfb-run >/dev/null 2>&1; then
+    _ag_note "DISPLAY kosong → xvfb-run (auto --no-sandbox; override via ANTIGRAVITY_FLAGS)"
+    # shellcheck disable=SC2086
+    exec xvfb-run -a "$AG_BIN" --no-sandbox ${ANTIGRAVITY_FLAGS:-} "$@"
+  else
+    err "DISPLAY kosong & xvfb-run tidak ada"
+    echo -e "    ${D}Install: ${C}sudo apt install -y xvfb${D} (VM) / ${C}pkg install xorg-xvfb${D} (Termux proot)"
+    echo -e "    ${D}Atau mode VNC: ${C}hermes antigravity vnc${N}"
+    return 1
+  fi
+}
+
+_ag_vnc_stop() {
+  local pidfile="$HOME/.hermes/antigravity-vnc.pid"
+  if [ -f "$pidfile" ]; then
+    kill $(cat "$pidfile") 2>/dev/null || true
+    rm -f "$pidfile"
+    _ag_ok "Antigravity VNC dihentikan"
+  else
+    _ag_note "tidak ada sesi VNC tercatat"
+  fi
+}
+
+_ag_vnc() {  # [port] | stop — headless VNC: Xvfb+x11vnc atau Xvnc (TigerVNC)
+  [ "${1:-}" = "stop" ] && { _ag_vnc_stop; return; }
+  local port="${1:-$AG_VNC_PORT}"
+  [ -x "$AG_BIN" ] || { err "belum terinstall — jalankan: hermes antigravity install"; return 1; }
+  case "$(uname -m)" in
+    aarch64|arm64) : ;;
+    *) err "paket ARM aarch64 tidak bisa jalan di $(uname -m)"; return 1 ;;
+  esac
+  _ag_glibc_ready || { err "interpreter glibc aarch64 tidak ada — pakai proot-distro / Oracle VM"; return 1; }
+  local disp=":99" mode="" xp=""
+  mkdir -p "$HOME/.hermes"
+  if command -v Xvfb >/dev/null 2>&1 && command -v x11vnc >/dev/null 2>&1; then
+    mode="Xvfb + x11vnc"
+    Xvfb "$disp" -screen 0 1280x800x24 >/dev/null 2>&1 & xp=$!
+    sleep 1
+    if ! x11vnc -display "$disp" -rfbport "$port" -localhost -nopw -forever -bg -quiet >/dev/null 2>&1; then
+      kill "$xp" 2>/dev/null; err "x11vnc gagal start di port $port"; return 1
+    fi
+  elif command -v Xvnc >/dev/null 2>&1; then
+    mode="Xvnc (TigerVNC)"
+    Xvnc "$disp" -geometry 1280x800 -rfbport "$port" -localhost -SecurityTypes None >/dev/null 2>&1 & xp=$!
+    sleep 1
+  else
+    err "butuh Xvfb+x11vnc atau Xvnc:"
+    echo -e "    ${D}Oracle VM : ${C}sudo apt install -y xvfb x11vnc"
+    echo -e "    ${D}Termux    : ${C}pkg install tigervnc${N}"
+    return 1
+  fi
+  # shellcheck disable=SC2086
+  DISPLAY="$disp" nohup "$AG_BIN" --no-sandbox ${ANTIGRAVITY_FLAGS:-} >/dev/null 2>&1 & local ap=$!
+  echo "$xp $ap" > "$HOME/.hermes/antigravity-vnc.pid"
+  _ag_ok "Antigravity berjalan (mode: $mode, DISPLAY $disp)"
+  echo -e "  ${W}VNC listen:${N} localhost:$port  ${D}(tidak diekspos publik)${N}"
+  echo -e "  ${W}Akses     :${N} sambungkan noVNC/websockify → localhost:$port"
+  echo -e "              ${D}di VM: panel noVNC $VM_NOVNC_URL atau websockify :6080${N}"
+  _ag_note "Stop: hermes antigravity vnc stop   (PID: $(cat "$HOME/.hermes/antigravity-vnc.pid"))"
+}
+
+_ag_uninstall() {
+  _ag_vnc_stop >/dev/null 2>&1 || true
+  local gone=""
+  [ -d "$AG_DIR" ] && { rm -rf "$AG_DIR"; gone="$gone dir"; }
+  if [ -e "$AG_LINK" ] || [ -L "$AG_LINK" ]; then rm -f "$AG_LINK"; gone="$gone symlink"; fi
+  [ -n "$gone" ] && _ag_ok "dihapus:${gone}" || _ag_note "tidak ada yang terinstall"
+}
+
+_ag_help() {
+  echo -e "${BOLD}🧩 Antigravity IDE (linux/ARM64) — usage${N}"
+  echo -e "  ${BOLD}antigravity install${N} [--force] [url|/path/lokal.tar.gz]  Download+verify+extract ke ${AG_DIR/#$HOME/~}"
+  echo -e "  ${BOLD}antigravity status${N}                                    Terinstall? + runtime check (arch/glibc/DISPLAY/headless)"
+  echo -e "  ${BOLD}antigravity launch${N} [args…]                            Jalankan IDE (via DISPLAY atau xvfb-run)"
+  echo -e "  ${BOLD}antigravity vnc${N} [port] | stop                       Mode headless → VNC localhost (default port $AG_VNC_PORT)"
+  echo -e "  ${BOLD}antigravity update${N}                                    Re-install build pinned"
+  echo -e "  ${BOLD}antigravity uninstall${N}                                 Hapus installasi + symlink"
+  echo -e "  ${BOLD}antigravity url${N}                                       Print URL tarball (utk aria2 manual di Termux)"
+  echo ""
+  echo -e "  ${D}Override env: ANTIGRAVITY_VERSION · ANTIGRAVITY_URL · ANTIGRAVITY_HOME · ANTIGRAVITY_FLAGS · AG_VNC_PORT${N}"
+  echo -e "  ${D}Auto-update resmi (Electron): $AG_UPDATER_MANIFEST${N}"
+}
+
+cmd_antigravity() {
+  local sub="${1:-status}"; shift 2>/dev/null || true
+  case "$sub" in
+    install|i)            _ag_install "$@" ;;
+    update|upgrade)       _ag_install --force "$@" ;;
+    status|s)             _ag_status ;;
+    launch|run|open)      _ag_launch "$@" ;;
+    vnc|headless)         _ag_vnc "$@" ;;
+    uninstall|remove|rm)  _ag_uninstall ;;
+    url)                  echo "$AG_URL" ;;
+    help|--help|-h)       _ag_help ;;
+    *) err "antigravity: subcommand tidak dikenal: $sub"; _ag_help ;;
+  esac
+}
+
 cmd_help() {
   header
   echo -e "${BOLD}📖 Commands${N}\n"
@@ -3421,7 +3670,8 @@ cmd_help() {
   echo -e "    ${BOLD}crawl${N} <url>                Crawl URL to markdown"
   echo -e "    ${BOLD}firebase${N} [status|save|admin] Firebase Firestore (REST atau Admin SDK)"
   echo -e "    ${BOLD}dashboard${N} [url|open|deploy] Web dashboard UI (Firebase Hosting)"
-  echo -e "    ${BOLD}vm${N} [status|console|wvc|kuma|novnc]  Oracle VM WebVirtCloud (alias: webvirtcloud.ai.studio)"
+    echo -e "    ${BOLD}vm${N} [status|console|wvc|kuma|novnc]  Oracle VM WebVirtCloud (alias: webvirtcloud.ai.studio)"
+    echo -e "    ${BOLD}antigravity${N} [install|launch|vnc|status]  Google Antigravity IDE (build resmi linux/ARM64)"
   echo ""
   echo -e "  ${G}Models & Status:${N}"
   echo -e "    ${BOLD}models${N}                     List all available AI models"
@@ -3606,6 +3856,7 @@ case "${1:-help}" in
   fix)         shift; cmd_fix "$@" ;;
   dashboard|dash) shift; cmd_dashboard "$@" ;;
   vm|wvc|oracle|webvirtcloud) shift; cmd_vm "$@" ;;
+  antigravity|ag|ide)  shift; cmd_antigravity "$@" ;;
   help|--help|-h) cmd_help ;;
   version|--version|-v) echo "Hermes v$VERSION ($CODENAME)" ;;
   *)           err "Unknown command: $1"; cmd_help ;;

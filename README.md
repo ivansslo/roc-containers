@@ -2,7 +2,7 @@
 
 **AI Agent CLI + App Manager for Termux (native)** — hermes CLI, lsmod v2 module system, RoadFX AI stack, dan tool native lainnya. Dibuat oleh **ivansslo** (2026) · **License: MIT**.
 
-> **v1.5.1 — Native Only + Oracle VM.** Semua command berbasis container **telah dihapus**
+> **v1.5.2 — Native Only + Oracle VM + Antigravity IDE.** Semua command berbasis container **telah dihapus**
 > (`roc-ubuntu`, `roc-debian`, `roc-httpd`, `roc-tailscale`, `roc-hms`,
 > `roc-crewai`, `roc-adk`, `roc-antigravity`). udocker tetap tersedia untuk
 > menjalankan container **manual berdasarkan nama**: `udocker run <nama>`.
@@ -59,7 +59,7 @@ curl -s https://raw.githubusercontent.com/ivansslo/roc-containers/main/setup.sh 
 ### 🤖 AI & Apps (native)
 | Command | Fungsi |
 |---|---|
-| `roc-agent` | AI Agent CLI utama — Hermes v5.12.0 "Oracle" |
+| `roc-agent` | AI Agent CLI utama — Hermes v5.13.0 "Oracle" (include `antigravity` IDE ARM64) |
 | `roc-maagba` | Multi-Agent Architectural Guidance (Bedrock AgentCore) |
 | `roc-spwr` | Superpowers (coding agent skills) |
 | `roc-hermui` | Hermes UI (dashboard bundel roc-agentsroute) |
@@ -139,7 +139,7 @@ chmod 600 ~/.hermes_keys
 │   └── roc-containers-ui.html  # Preview menu (native)
 └── apps/
     ├── ai/               # ⭐ RoadFX AI Stack + lsmod v2
-    ├── roc-agent/        # Hermes CLI ter-bundle (v5.12.0 + dashboard)
+    ├── roc-agent/        # Hermes CLI ter-bundle (v5.13.0 + dashboard)
     ├── maagba/           # MAAGBA (Bedrock AgentCore)
     ├── spwr/             # Superpowers
     ├── hermui/           # Hermes UI (fallback dashboard bundel)
@@ -167,7 +167,7 @@ chmod 600 ~/.hermes_keys
 | Repo | Isi |
 |---|---|
 | [rocspace](https://github.com/ivansslo/rocspace) | RocSpace Monorepo — CF Workers v18.0.3 |
-| [roc-agentsroute](https://github.com/ivansslo/roc-agentsroute) | Hermes AI Agent CLI v5.12.0 |
+| [roc-agentsroute](https://github.com/ivansslo/roc-agentsroute) | Hermes AI Agent CLI v5.13.0 |
 | [roadfx-ai-stack](https://github.com/ivansslo/roadfx-ai-stack) | RoadFX AI Stack (roc-ai) |
 | [clawdex-mobile](https://github.com/ivansslo/clawdex-mobile) | Clawdex Mobile |
 | [hermes-agent](https://github.com/ivansslo/hermes-agent) | Hermes Agent upstream |
@@ -181,6 +181,15 @@ MIT License · Created by **ivansslo** · 2026
 ---
 
 ## 🆕 Changelog
+
+### v1.5.2 — Bundle hermes v5.13.0 "Antigravity" (2026-07-16)
+- Bundle `apps/roc-agent/hermes` sinkron → **v5.13.0**: command baru
+  `antigravity` (alias `ag|ide`) — installer resmi **Google Antigravity IDE**
+  linux/ARM64 (build `2.3.0-5214728084127744`, pinned URL + verifikasi
+  content-length & MD5 GCS) + launcher GUI/`xvfb-run` + mode **headless VNC
+  :5905**. Tersedia via `roc-agent antigravity install|status|launch|vnc`.
+  Target run: Oracle VM (aarch64) / Termux via proot-distro (glibc).
+- Bundle `apps/roc-agent/dashboard/` sinkron (badge v5.13.0 + baris cheatsheet antigravity).
 
 ### v1.5.1 — Auto-Cleanup + Oracle VM Integration (2026-07-16)
 - **Auto-cleanup wrapper usang** di `setup.sh`: `roc-ubuntu/debian/httpd/tailscale/hms/crewai/adk/antigravity` otomatis dihapus dari `$BIN_DIR` saat setup/`roc-update` — tidak perlu `rm` manual lagi
