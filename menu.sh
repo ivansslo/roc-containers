@@ -4,10 +4,11 @@
 #  License: MIT
 #  Repo: https://github.com/ivansslo/roc-containers
 # ─────────────────────────────────────────────────────────────────
-#  v1.5.0 — NATIVE ONLY. Semua command berbasis container (udocker)
-#  telah dihapus: roc-ubuntu/debian/httpd/tailscale/hms/crewai/adk/
-#  antigravity. Menjalankan container kini manual via udocker:
+#  v1.5.1 — NATIVE ONLY + Oracle VM. Semua command berbasis container
+#  (udocker) telah dihapus; wrapper usang otomatis dibersihkan setup.sh.
+#  Menjalankan container kini manual via udocker:
 #      udocker run <nama-container>
+#  Integrasi Oracle VM (alias: webvirtcloud.ai.studio) via roc-vm.
 # ─────────────────────────────────────────────────────────────────
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -29,7 +30,7 @@ print_header(){
   echo -e "${CYAN}${BOLD}"
   echo "  ╔══════════════════════════════════════════════════════╗"
   echo "  ║       roc-containers · AI Agent CLI (native)         ║"
-  echo "  ║               v1.5.0 (c) 2026 | @ivansslo            ║"
+  echo "  ║               v1.5.1 (c) 2026 | @ivansslo            ║"
   echo "  ╚══════════════════════════════════════════════════════╝"
   echo -e "${RESET}"
   echo -e "  ${DIM}OS: $(uname -m)${RESET}"
@@ -98,11 +99,17 @@ while true; do
   print_item  12  "Update roc-containers"         ""  "sys"
   print_item  13  "Uninstall / Clean"             ""  "sys"
   print_item  14  "Install/Repair udocker"        ""  "sys"
-  print_item  15  "Remote Dev Connect"            "codespaces/oracle/aiven" "sys"
-  print_item  00  "Exit"                          ""  "sys"
+  print_item 15  "Remote Dev Connect"            "codespaces/oracle/aiven" "sys"
+
+  # ── 🖥️ Oracle VM (webvirtcloud.ai.studio) ──
+  print_section "🖥️  Oracle VM  (alias: webvirtcloud.ai.studio)"
+  print_item 16  "VM Status & Health"            "roc-vm status" "app"
+  print_item 17  "Buka VM Console"               "vm.roadfx.biz.id/vm" "app"
+  print_item 18  "Layanan di VM"                 "roc-vm services" "app"
+  print_item 00  "Exit"                          ""  "sys"
 
   echo ""
-  echo -en "  ${BOLD}Select option [00-15]: ${RESET}"
+  echo -en "  ${BOLD}Select option [00-18]: ${RESET}"
   read -r choice
 
   case "$choice" in
@@ -136,6 +143,15 @@ while true; do
     13)    run_script "$SCRIPT_DIR/lib/uninstall.sh" ;;
     14)    run_script "$SCRIPT_DIR/install_udocker.sh" ;;
     15)    run_script "$SCRIPT_DIR/lib/remote-connect.sh" ;;
+
+    # ── 🖥️ Oracle VM (webvirtcloud.ai.studio) ──
+    16|17|18)
+      _vm_arg="status"; [ "$choice" = "17" ] && _vm_arg="console"; [ "$choice" = "18" ] && _vm_arg="services"
+      if command -v roc-vm &>/dev/null; then bash "$(command -v roc-vm)" "$_vm_arg"
+      elif [ -n "${PREFIX:-}" ] && [ -f "$PREFIX/bin/roc-vm" ]; then bash "$PREFIX/bin/roc-vm" "$_vm_arg"
+      elif [ -f "$SCRIPT_DIR/apps/roc-agent/hermes" ]; then bash "$SCRIPT_DIR/apps/roc-agent/hermes" vm "$_vm_arg"
+      else echo -e "  ${RED}roc-vm belum terinstall — jalankan: bash setup.sh${RESET}"; sleep 2; fi
+      ;;
 
     0|00|q|Q|exit) echo -e "\n  Goodbye.\n" ; exit 0 ;;
     *) echo -e "\n  Invalid option." ; sleep 1 ;;

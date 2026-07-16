@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>roc-containers v1.5.0 • Native</title>
+<title>roc-containers v1.5.1 • Native</title>
 <style>
   body { background:#0a0c10; color:#c9d1d9; font-family:ui-monospace,monospace; padding:20px; }
   .terminal { max-width:920px; margin:auto; background:#161b22; border:1px solid #30363d; border-radius:16px; overflow:hidden; }
@@ -24,9 +24,9 @@
 </head>
 <body>
 <div class="terminal">
-  <div class="header"><b>roc-containers v1.5.0 • AI Agent CLI (native)</b><small>@ivansslo</small></div>
+  <div class="header"><b>roc-containers v1.5.1 • AI Agent CLI (native)</b><small>@ivansslo</small></div>
   <div class="content">
-    <div class="note">v1.5.0: semua command berbasis container <b>dihapus</b> (roc-ubuntu/debian/httpd/tailscale/hms/crewai/adk/antigravity). Menjalankan container kini manual: <code>udocker run &lt;nama-container&gt;</code></div>
+    <div class="note">v1.5.1: <b>auto-cleanup</b> — wrapper usang (roc-ubuntu/debian/httpd/tailscale/hms/crewai/adk/antigravity) otomatis dihapus saat setup/update. Menjalankan container manual: <code>udocker run &lt;nama-container&gt;</code>. Plus integrasi <b>Oracle VM</b> (alias: <code>webvirtcloud.ai.studio</code>).</div>
 
     <h3>⭐ AI Stack (Primary)</h3>
     <div class="menu">
@@ -46,6 +46,14 @@
       <div class="item app"><span><span class="num">[06]</span> Superpowers</span></div>
       <div class="item app"><span><span class="num">[07]</span> Hermes UI (dashboard)</span></div>
       <div class="item app"><span><span class="num">[08]</span> Clawdex Mobile</span></div>
+    </div>
+
+    <h3>🖥️ Oracle VM <span class="new">alias: webvirtcloud.ai.studio</span></h3>
+    <div class="menu">
+      <div class="item app"><span><span class="num">[16]</span> VM Status &amp; Health</span><span class="new">roc-vm status</span></div>
+      <div class="item app"><span><span class="num">[17]</span> Buka VM Console</span><span class="new">roc-vm console</span></div>
+      <div class="item app"><span><span class="num">[18]</span> Layanan di VM</span><span class="new">roc-vm services</span></div>
+      <div class="item app"><span><span class="num">[→]</span> Console Web</span><span><a href="https://vm.roadfx.biz.id/" style="color:#79c0ff">vm.roadfx.biz.id</a></span></div>
     </div>
 
     <h3>⚙️ System</h3>

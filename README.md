@@ -2,7 +2,7 @@
 
 **AI Agent CLI + App Manager for Termux (native)** — hermes CLI, lsmod v2 module system, RoadFX AI stack, dan tool native lainnya. Dibuat oleh **ivansslo** (2026) · **License: MIT**.
 
-> **v1.5.0 — Native Only.** Semua command berbasis container **telah dihapus**
+> **v1.5.1 — Native Only + Oracle VM.** Semua command berbasis container **telah dihapus**
 > (`roc-ubuntu`, `roc-debian`, `roc-httpd`, `roc-tailscale`, `roc-hms`,
 > `roc-crewai`, `roc-adk`, `roc-antigravity`). udocker tetap tersedia untuk
 > menjalankan container **manual berdasarkan nama**: `udocker run <nama>`.
@@ -46,6 +46,16 @@ curl -s https://raw.githubusercontent.com/ivansslo/roc-containers/main/setup.sh 
 | `roc-ai orchestrate <task>` | 🎼 Koordinasi multi-agent native |
 | `roc-ai registry` | 📦 Daftar modul (registry formal v2) |
 
+### 🖥️ Oracle VM (alias: `webvirtcloud.ai.studio`)
+| Command | Fungsi |
+|---|---|
+| `roc-vm status` | 🖥️ Status & probe semua endpoint (health/WVC/Kuma/monitor/noVNC) |
+| `roc-vm console` | Buka VM Console (`vm.roadfx.biz.id/vm`, Firebase auth) |
+| `roc-vm services` | Layanan aktif di VM (JSON via bridge HTTPS `vm.roadfx.biz.id/health`) |
+| `roc-vm ssh` | Tampilkan perintah SSH (public IP / tailnet) |
+| `roc-vm wvc / kuma / monitor / novnc` | Buka WebVirtCloud / Uptime Kuma / monitor / noVNC |
+| `roc-vm studio` | Buka AI Studio app + info alias |
+
 ### 🤖 AI & Apps (native)
 | Command | Fungsi |
 |---|---|
@@ -77,6 +87,9 @@ udocker run ubuntu            # ← perintah = nama container
 roc-status                    # lihat container yang ada
 ```
 
+> 🧹 **Auto-cleanup (v1.5.1):** menjalankan `bash setup.sh` (atau `roc-update`)
+> otomatis menghapus wrapper usang `roc-ubuntu/debian/httpd/tailscale/hms/crewai/adk/antigravity` dari `$PREFIX/bin` — tidak perlu `rm` manual.
+
 ---
 
 ## 🔑 Setup API Keys
@@ -101,7 +114,7 @@ chmod 600 ~/.hermes_keys
 
 ---
 
-## 📂 Struktur Direktori (v1.5.0)
+## 📂 Struktur Direktori (v1.5.x)
 
 ```
 ~/.roc-containers/
@@ -168,6 +181,15 @@ MIT License · Created by **ivansslo** · 2026
 ---
 
 ## 🆕 Changelog
+
+### v1.5.1 — Auto-Cleanup + Oracle VM Integration (2026-07-16)
+- **Auto-cleanup wrapper usang** di `setup.sh`: `roc-ubuntu/debian/httpd/tailscale/hms/crewai/adk/antigravity` otomatis dihapus dari `$BIN_DIR` saat setup/`roc-update` — tidak perlu `rm` manual lagi
+- **Command baru `roc-vm`** — integrasi Oracle VM · WebVirtCloud (alias: `webvirtcloud.ai.studio`), thin wrapper → Hermes v5.12.0 "Oracle":
+  - `roc-vm status` — probe health/WVC/Kuma/monitor/noVNC sekaligus
+  - `roc-vm console` — buka VM Console (`vm.roadfx.biz.id/vm`)
+  - `roc-vm services` — layanan aktif di VM (bridge HTTPS `vm.roadfx.biz.id/health`)
+  - `roc-vm ssh / tailscale / wvc / kuma / monitor / novnc / studio`
+- `menu.sh`: section baru **🖥️ Oracle VM** (opsi 16–18); `ui/roc-containers-ui.html` sinkron + link console
 
 ### v1.5.0 — Native Only + lsmod v2 (2026-07-16)
 

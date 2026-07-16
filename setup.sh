@@ -10,7 +10,7 @@ RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'
 CYAN='\033[0;36m'; BLUE='\033[0;34m'; MAGENTA='\033[0;35m'
 BOLD='\033[1m'; DIM='\033[2m'; RESET='\033[0m'
 
-VERSION="1.5.0"
+VERSION="1.5.1"
 BIN_DIR="${PREFIX:-$HOME/.local}/bin"
 ROC_DIR="$HOME/.roc-containers"
 
@@ -177,6 +177,29 @@ AGENT_WRAPPER
 chmod +x "$BIN_DIR/roc-agent"
 printf "  ${GREEN}✅${RESET} %-20s %s\n" "roc-agent" "AI Agent CLI (Termux native)"
 
+# ── ROC-VM: Oracle VM / WebVirtCloud (alias: webvirtcloud.ai.studio) ──
+cat > "$BIN_DIR/roc-vm" << VM_WRAPPER
+$AGENT_SHEBANG
+# roc-vm — 🖥️ Oracle VM · WebVirtCloud (alias: webvirtcloud.ai.studio)
+# Delegate ke hermes v5.12.0+ "Oracle":  roc-vm <status|console|wvc|kuma|monitor|novnc|ssh|tailscale|services|studio>
+
+ROC_DIR="\$HOME/.roc-containers"
+HERMES_BIN="\$ROC_DIR/apps/roc-agent/hermes"
+
+if [ ! -f "\$HERMES_BIN" ]; then
+    echo "❌ hermes CLI tidak ditemukan: \$HERMES_BIN"
+    echo "   Jalankan: bash \$ROC_DIR/setup.sh"
+    exit 1
+fi
+
+# Load keys (opsional — VM_IP/TAILSCALE bisa dioverride via env)
+[ -f "\$HOME/.hermes_keys" ] && source "\$HOME/.hermes_keys" 2>/dev/null
+
+exec bash "\$HERMES_BIN" vm "\$@"
+VM_WRAPPER
+chmod +x "$BIN_DIR/roc-vm"
+printf "  ${GREEN}✅${RESET} %-20s %s\n" "roc-vm" "🖥️ Oracle VM · WebVirtCloud (webvirtcloud.ai.studio)"
+
 # ── ⭐ AI Stack (Primary) ──
 make_cmd "roc-ai"          "apps/ai/ai.sh"              "⭐ RoadFX AI Stack (ivansslo/roadfx-ai-stack)"
 
@@ -198,6 +221,21 @@ make_cmd "roc-uninstall"   "lib/uninstall.sh"             "Uninstall / clean"
 make_cmd "roc-udocker"     "install_udocker.sh"           "Reinstall udocker"
 make_cmd "roc-remote"      "lib/remote-connect.sh"        "🌐 Remote dev connect (Codespaces/CloudShell/Oracle/Aiven)"
 
+# ── Auto-cleanup wrapper USANG (v1.5.0 menghapus semua command container) ──
+# Wrapper lama v1.4.x ke bawah masih tertinggal di $BIN_DIR setelah update.
+# Daftar ini = make_cmd yang DIHAPUS antara v1.4.0 → v1.5.0.
+echo -e "  ${DIM}Membersihkan wrapper usang...${RESET}"
+STALE_CMDS=(roc-ubuntu roc-debian roc-httpd roc-tailscale roc-hms roc-crewai roc-adk roc-antigravity)
+_removed=0
+for _sc in "${STALE_CMDS[@]}"; do
+    if [ -f "$BIN_DIR/$_sc" ]; then
+        rm -f "$BIN_DIR/$_sc"
+        printf "  ${YELLOW}🧹${RESET} %-20s %s\n" "$_sc" "wrapper usang dihapus"
+        _removed=$((_removed+1))
+    fi
+done
+[ "$_removed" -eq 0 ] && echo -e "  ${DIM}🧹 Tidak ada wrapper usang — bersih${RESET}"
+
 # ════════════════════════════════════════════════════════
 #  Verifikasi
 # ════════════════════════════════════════════════════════
@@ -211,6 +249,7 @@ echo -e "  ${CYAN}roc-agent chat${RESET}          Chat dengan AI"
 echo -e "  ${CYAN}roc-agent ask 'halo'${RESET}     Quick question"
 echo -e "  ${CYAN}roc-agent import${RESET}        Export agent for AI Studio / AIS-DEV"
 echo -e "  ${CYAN}roc-ai orchestrator <t>${RESET} 🧠 Autonomous Orchestrator (Planner→… + Grounding)"
+echo -e "  ${CYAN}roc-vm status${RESET}           🖥️ Oracle VM status (alias: webvirtcloud.ai.studio)"
 echo -e "  ${CYAN}roc-remote${RESET}              🌐 Connect ke remote dev"
 echo -e "  ${CYAN}roc-menu${RESET}                Menu utama"
 echo -e "  ${CYAN}roc-status${RESET}              Cek container status"
