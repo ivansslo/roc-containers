@@ -2,7 +2,7 @@
 
 **AI Agent CLI + App Manager for Termux (native)** — hermes CLI, lsmod v2 module system, RoadFX AI stack, dan tool native lainnya. Dibuat oleh **ivansslo** (2026) · **License: MIT**.
 
-> **v1.5.4 — Native Only + Oracle VM (panel pintasan layanan) + Antigravity IDE (label: `antigravity.ai.studio`).** Semua command berbasis container **telah dihapus**
+> **v1.5.5 — Native Only + Oracle VM + Antigravity IDE + Cloudflare Tunnel (`roc-tunnel`).** Semua command berbasis container **telah dihapus**
 > (`roc-ubuntu`, `roc-debian`, `roc-httpd`, `roc-tailscale`, `roc-hms`,
 > `roc-crewai`, `roc-adk`, `roc-antigravity`). udocker tetap tersedia untuk
 > menjalankan container **manual berdasarkan nama**: `udocker run <nama>`.
@@ -181,6 +181,12 @@ MIT License · Created by **ivansslo** · 2026
 ---
 
 ## 🆕 Changelog
+
+### v1.5.5 — Cloudflare Tunnel `roc-tunnel` (2026-07-17)
+- Wrapper **`roc-tunnel`** (`lib/tunnel.sh`): `install | login | create | up | up-bg | down | status | url | quick`.
+- Alur sekali: `roc-tunnel install` → `login` (OAuth CF di browser, sekali) → `create` (tunnel `roc-ag-hp` + ingress **`ag.roadfx.biz.id` → `http://localhost:5905`** + DNS route via cloudflared cert) → `up-bg` (nohup + pidfile + log di `~/.roc-containers/cloudflared/`).
+- Override via env: `ROC_TUNNEL_NAME` · `ROC_TUNNEL_HOST` · `ROC_TUNNEL_TARGET`.
+- Menu opsi **22** + seksi panel UI baru. Catatan keamanan: URL publik Antigravity tanpa Access = risiko; saran aktifkan Cloudflare Access (email OTP) di Zero Trust dashboard setelah tunnel jalan.
 
 ### v1.5.4 — Panel pintasan layanan `webvirtcloud.ai.studio` (2026-07-17)
 - UI panel (`ui/roc-containers-ui.html`): seksi 🖥️ Oracle VM kini berisi **link satu-tap** langsung ke seluruh layanan — WebVirtCloud `/wvc/`, Uptime Kuma `/kuma/`, Monitor `/monitor/`, noVNC `/vm/novnc/`, plus Console Web `vm.roadfx.biz.id`.

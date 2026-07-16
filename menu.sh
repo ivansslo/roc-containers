@@ -31,7 +31,7 @@ print_header(){
   echo -e "${CYAN}${BOLD}"
   echo "  ╔══════════════════════════════════════════════════════╗"
   echo "  ║       roc-containers · AI Agent CLI (native)         ║"
-  echo "  ║               v1.5.4 (c) 2026 | @ivansslo            ║"
+  echo "  ║               v1.5.5 (c) 2026 | @ivansslo            ║"
   echo "  ╚══════════════════════════════════════════════════════╝"
   echo -e "${RESET}"
   echo -e "  ${DIM}OS: $(uname -m)${RESET}"
@@ -113,10 +113,14 @@ while true; do
   print_item 19  "Antigravity Status"            "hermes antigravity status" "app"
   print_item 20  "Web UI (node HP)"              "localhost:5905" "app"
   print_item 21  "Node Oracle VM (noVNC :6905)"  "pending install di VM" "app"
+
+  # ── 🌐 Cloudflare Tunnel (ag.roadfx.biz.id) ──
+  print_section "🌐  Cloudflare Tunnel  (ag.roadfx.biz.id → node HP)"
+  print_item 22  "Tunnel Setup & Status"         "roc-tunnel (install→login→create→up-bg)" "app"
   print_item 00  "Exit"                          ""  "sys"
 
   echo ""
-  echo -en "  ${BOLD}Select option [00-21]: ${RESET}"
+  echo -en "  ${BOLD}Select option [00-22]: ${RESET}"
   read -r choice
 
   case "$choice" in
@@ -179,6 +183,17 @@ while true; do
       echo "     noVNC : http://161.118.253.28:6905/vnc.html"
       echo -e "     ${YELLOW:-}Status: pending — install di VM belum dijalankan (menunggu akses SSH/OCI Run Command).${RESET:-}"
       sleep 3
+      ;;
+
+    # ── 🌐 Cloudflare Tunnel (ag.roadfx.biz.id) ──
+    22)
+      if command -v roc-tunnel &>/dev/null; then roc-tunnel status
+      elif [ -f "$SCRIPT_DIR/lib/tunnel.sh" ]; then bash "$SCRIPT_DIR/lib/tunnel.sh" status
+      else echo -e "  ${RED}roc-tunnel belum terinstall — jalankan: bash setup.sh${RESET}"; sleep 2; fi
+      echo ""
+      echo -e "  ${DIM}Alur sekali: roc-tunnel install → login → create → up-bg${RESET}"
+      echo -e "  ${DIM}Lalu buka https://ag.roadfx.biz.id${RESET}"
+      sleep 4
       ;;
 
     0|00|q|Q|exit) echo -e "\n  Goodbye.\n" ; exit 0 ;;

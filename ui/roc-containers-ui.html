@@ -26,7 +26,7 @@
 <div class="terminal">
   <div class="header"><b>roc-containers v1.5.1 • AI Agent CLI (native)</b><small>@ivansslo</small></div>
   <div class="content">
-    <div class="note">v1.5.4: <b>auto-cleanup</b> — wrapper usang (roc-ubuntu/debian/httpd/tailscale/hms/crewai/adk/antigravity) otomatis dihapus saat setup/update. Menjalankan container manual: <code>udocker run &lt;nama-container&gt;</code>. Plus integrasi <b>Oracle VM</b> (alias: <code>webvirtcloud.ai.studio</code> — kini dengan pintasan layanan satu-tap) dan label panel <b>Antigravity IDE</b> (alias: <code>antigravity.ai.studio</code> — node HP + Oracle VM).</div>
+    <div class="note">v1.5.5: <b>auto-cleanup</b> — wrapper usang (roc-ubuntu/debian/httpd/tailscale/hms/crewai/adk/antigravity) otomatis dihapus saat setup/update. Menjalankan container manual: <code>udocker run &lt;nama-container&gt;</code>. <b>Oracle VM</b> (alias <code>webvirtcloud.ai.studio</code> — pintasan layanan satu-tap), <b>Antigravity IDE</b> (alias <code>antigravity.ai.studio</code>), dan <b>Cloudflare Tunnel</b> <code>roc-tunnel</code> → <code>ag.roadfx.biz.id</code>.</div>
 
     <h3>⭐ AI Stack (Primary)</h3>
     <div class="menu">
@@ -65,6 +65,12 @@
       <div class="item app"><span><span class="num">[19]</span> Antigravity Status</span><span class="new">hermes antigravity status</span></div>
       <div class="item app"><span><span class="num">[20]</span> Web UI (node HP)</span><span><a href="http://localhost:5905" style="color:#79c0ff">localhost:5905</a></span></div>
       <div class="item app"><span><span class="num">[21]</span> Node Oracle VM (noVNC :6905)</span><span class="new">pending install</span></div>
+    </div>
+
+    <h3>🌐 Cloudflare Tunnel <span class="new">ag.roadfx.biz.id → localhost:5905</span></h3>
+    <div class="menu">
+      <div class="item app"><span><span class="num">[22]</span> Tunnel Setup &amp; Status</span><span class="new">roc-tunnel status</span></div>
+      <div class="item app"><span><span class="num">[→]</span> Antigravity via Tunnel</span><span><a href="https://ag.roadfx.biz.id" style="color:#79c0ff">ag.roadfx.biz.id</a></span></div>
     </div>
 
     <h3>⚙️ System</h3>

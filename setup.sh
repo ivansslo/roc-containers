@@ -10,7 +10,7 @@ RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'
 CYAN='\033[0;36m'; BLUE='\033[0;34m'; MAGENTA='\033[0;35m'
 BOLD='\033[1m'; DIM='\033[2m'; RESET='\033[0m'
 
-VERSION="1.5.4"
+VERSION="1.5.5"
 BIN_DIR="${PREFIX:-$HOME/.local}/bin"
 ROC_DIR="$HOME/.roc-containers"
 
@@ -200,6 +200,26 @@ VM_WRAPPER
 chmod +x "$BIN_DIR/roc-vm"
 printf "  ${GREEN}✅${RESET} %-20s %s\n" "roc-vm" "🖥️ Oracle VM · WebVirtCloud (webvirtcloud.ai.studio)"
 
+# ── ROC-TUNNEL: Cloudflare Tunnel (ag.roadfx.biz.id) ──
+cat > "$BIN_DIR/roc-tunnel" << TUN_WRAPPER
+$AGENT_SHEBANG
+# roc-tunnel — 🌐 Cloudflare Tunnel (default: ag.roadfx.biz.id → localhost:5905)
+# Delegate ke lib/tunnel.sh di repo ROC_containers.
+
+ROC_DIR="\$HOME/.roc-containers"
+LIB_TUN="\$ROC_DIR/lib/tunnel.sh"
+
+if [ ! -f "\$LIB_TUN" ]; then
+    echo "❌ lib/tunnel.sh tidak ditemukan: \$LIB_TUN"
+    echo "   Jalankan: bash \$ROC_DIR/setup.sh (git pull dulu bila perlu)"
+    exit 1
+fi
+
+exec bash "\$LIB_TUN" "\$@"
+TUN_WRAPPER
+chmod +x "$BIN_DIR/roc-tunnel"
+printf "  ${GREEN}✅${RESET} %-20s %s\n" "roc-tunnel" "🌐 Cloudflare Tunnel (ag.roadfx.biz.id)"
+
 # ── ⭐ AI Stack (Primary) ──
 make_cmd "roc-ai"          "apps/ai/ai.sh"              "⭐ RoadFX AI Stack (ivansslo/roadfx-ai-stack)"
 
@@ -250,6 +270,7 @@ echo -e "  ${CYAN}roc-agent ask 'halo'${RESET}     Quick question"
 echo -e "  ${CYAN}roc-agent import${RESET}        Export agent for AI Studio / AIS-DEV"
 echo -e "  ${CYAN}roc-ai orchestrator <t>${RESET} 🧠 Autonomous Orchestrator (Planner→… + Grounding)"
 echo -e "  ${CYAN}roc-vm status${RESET}           🖥️ Oracle VM status (alias: webvirtcloud.ai.studio)"
+echo -e "  ${CYAN}roc-tunnel up-bg${RESET}        🌐 Cloudflare Tunnel → ag.roadfx.biz.id (antigravity.ai.studio)"
 echo -e "  ${CYAN}roc-remote${RESET}              🌐 Connect ke remote dev"
 echo -e "  ${CYAN}roc-menu${RESET}                Menu utama"
 echo -e "  ${CYAN}roc-status${RESET}              Cek container status"
