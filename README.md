@@ -1,4 +1,4 @@
-# ⚡ roc-containers
+# ⚡ roc-container
 
 **AI Agent CLI + App Manager for Termux (native)** — hermes CLI, lsmod v2 module system, RoadFX AI stack, dan tool native lainnya. Dibuat oleh **ivansslo** (2026) · **License: MIT**.
 
